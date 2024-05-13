@@ -4,6 +4,9 @@ function[x1,y1,fieldOut]=createEddyFrame(x,y,xo,yo,L,fieldIn,options)
 %   [XP,YP,ZP] = createEddyFrame(X,Y,XO,YO,L,Z) interpolates the field Z 
 %   defined at spatial locations (X,Y) into a frame moving with the eddy
 %   center point (XO,YO), in a square domain with side lengths set by L.
+% 
+%   The "P" in XP, YP, and ZP could be read as "prime", distinguishing 
+%   variables centered on the eddy from their original versions.
 %
 %   [XP,YP,ZP1,ZP2,...,ZPN] = createEddyFrame(X,Y,XO,YO,L,Z1,Z2,...,ZN) 
 %   also works.  That is, Z and ZP are repeating arguments. 

@@ -3,6 +3,8 @@ function[xo,yo,xc,yc] = eddyCenter(x,y,z,level,options)
 %
 %   [XO,YO] = eddyCenter(X,Y,Z,LEVEL) finds the center of an eddy as the
 %   centroid of closed contours where the field Z takes on the value LEVEL. 
+%   The "O" here can be thought of as standing for "origin", since it will
+%   become the origin of an eddy-centered coordinate system.
 %
 %   X and Y are uniformly spaced 1D arrays, Z is a 3D array with LENGTH(Y)
 %   rows and LENGTH(X) columns, and XO and YO are 1D arrays with SIZE(Z,3) 

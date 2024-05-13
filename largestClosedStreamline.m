@@ -30,8 +30,6 @@ function[xc,yc,levels,firstClosedLevel] = largestClosedStreamline(xp,yp,psip,ci)
 %
 %   Usage: [xpc,ypc,levels,index] = largestClosedStreamline(xp,yp,psip,0.5)
 
-%
-
 arguments (Input)
     xp {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector,mustBeUniform(xp)}
     yp {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector,mustBeUniform(yp),mustHaveSameSpacing(xp,yp)}
