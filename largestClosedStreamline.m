@@ -6,12 +6,12 @@ function[xc,yc,levels,firstClosedLevel] = largestClosedStreamline(xp,yp,psip,ci)
 %   with an eddy relative to a frame of reference moving with the eddy. 
 % 
 %   XP and YP are coordinate arrays in the co-moving frame, with the origin
-%   (0,0) corresponding to the eddy center, created by CREATEEDDYFRAME.
+%   (0,0) corresponding to the eddy center, created by FIELDINEDDYFRAME.
 %
 %   PSIP is a 3D array of streamfunction values for the velocity in the 
 %   co-moving frame, created by EDDYFRAMESTREAMFUNCTION. 
 %
-%   CI is the desired contour interval, a scalar. 
+%   CI is the desired contour interval, a scalar, in units of PSIP.
 %
 %   XPC and YPC are cell arrays of length SIZE(PSIP,3) containing the 
 %   largest closed streamline at each time, expressed in the eddy-centered
@@ -44,7 +44,7 @@ arguments (Output)
     firstClosedLevel {mustBeNumeric,mustBeReal,mustBeVector}
 end
 
-[xg,yg] = meshgrid(xp,yp);
+[xg,yg] = ndgrid(xp,yp);
 [xc,yc] = deal(cell(size(psip,3),1));
 
 for k = 1:size(psip,3)
