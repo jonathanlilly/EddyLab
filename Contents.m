@@ -1,7 +1,7 @@
-%   eddyCenterFromField - Find the center of a coherent eddy from 3D fields.
-%   fieldInEddyFrame - Create a frame centered on an eddy through interpolation.
-%   eddyFrameStreamFunction - Streamfunction of an eddy in the co-moving frame.
-%   largestClosedStreamline - Largest closed streamline in the eddy frame.
+%   eddyCenterFromField - Center of a coherent eddy from a 3D (x,y,t) field..
+%   fieldInEddyFrame - A 3D field interpolated into the frame of an eddy.
+%   eddyFrameStreamFunction - Streamfunction of an eddy in the eddy frame.
+%   largestClosedStreamLine - Largest closed streamline in the eddy frame.
 %   isParticleEnclosed - True for particles enclosed within a given contour.
-%   radialStatisticsFromGridded - Radial statistics from gridded data.
-%   radialStatisticsFromScattered - Radial statistics from scattered data.
+%   radialStatisticsFromField - Radial statistics from 3D (x,y,t) fields.
+%   radialStatisticsFromScatter - Radial statistics from scattered data.

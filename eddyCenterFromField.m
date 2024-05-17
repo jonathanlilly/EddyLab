@@ -1,5 +1,5 @@
 function[xo,yo,xc,yc] = eddyCenterFromField(x,y,z,level,options)
-%eddyCenterFromField  Find the center of a coherent eddy from 3D fields.
+%eddyCenterFromField  Center of a coherent eddy from a 3D (x,y,t) field.
 %
 %   [XO,YO] = eddyCenterFromField(X,Y,Z,LEVEL) finds the center of an eddy 
 %   as the centroid of closed contours where the field Z takes on the value 

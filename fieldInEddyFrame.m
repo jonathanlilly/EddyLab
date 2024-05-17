@@ -1,5 +1,5 @@
 function[x1,y1,fieldOut]=fieldInEddyFrame(x,y,xo,yo,L,fieldIn,options)
-%fieldInEddyFrame  Interpolate a field into the frame of an eddy.
+%fieldInEddyFrame  A 3D field interpolated into the frame of an eddy.
 %
 %   [XP,YP,ZP] = fieldInEddyFrame(X,Y,XO,YO,L,Z) interpolates the field Z 
 %   defined at spatial locations (X,Y) into a frame moving with the eddy
@@ -23,8 +23,8 @@ function[x1,y1,fieldOut]=fieldInEddyFrame(x,y,xo,yo,L,fieldIn,options)
 %
 %   Options
 %
-%   [XP,YP,ZP] = fieldInEddyFrame(...,dx = DX) sets the sampling interval of
-%   the output coordinates, XP(2)-XP(1) and YP(2)-YP(1). By default, the
+%   [XP,YP,ZP] = fieldInEddyFrame(...,dx = DX) sets the sampling interval 
+%   of the output coordinates, XP(2)-XP(1) and YP(2)-YP(1). By default, the
 %   the sampling interval of the input coordinates (X,Y) will be used.  
 %
 %   [XP,YP,ZP] = fieldInEddyFrame(...,method = METHOD) sets the 
