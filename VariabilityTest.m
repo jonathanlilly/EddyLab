@@ -3,6 +3,7 @@ prettyblue=[0, 0.4470, 0.7410];
 prettyorange=[0.8500, 0.3250, 0.0980];
 prettyyellow=[0.9290, 0.6940, 0.1250];
 prettypurple=[0.4940, 0.1840, 0.5560];
+prettygreen=[0.4660 0.6740 0.1880];
 %% Test 1: Azimuthally symmetric eddy with radially symmetric perturbations
 A = 1;
 R = 1 / sqrt(-2*log(Tol)); %so that sqrt(2)/R=0. Roughly R=0.33
@@ -65,19 +66,23 @@ else
     disp('Test 1 failed. Eddy is not azimuthally symmetric')
 end
 
+% Std Total
+stdTotal = sqrt(stdAziAvgTemp.^2+AvgAziStdTemp.^2);
+
 % Plot Test 1 profiles
 figure(1); hold on
-h1 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
-h2 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
-h3 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
-h4 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-.');
-h5 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h1 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h2 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
+h3 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
+h4 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
+h5 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettygreen, 'linestyle', '-.');
+h6 = plot(rmid, stdTotal, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-');
 xlabel('Radial distance', 'FontName', 'times')
 ylabel('SSH Variability', 'FontName', 'times')
 set(gca, 'fontname', 'times')
 % % zero horizontal line
 % plot([rmid(1), rmid(end-1)], [0, 0], 'k:')
-lg = legend([h1, h2, h3, h4, h5], '$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$');
+lg = legend([h1, h2, h3, h4, h5, h6], '$\overline{\mathrm{z}}^\theta$','$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$','$\Sigma_{z}$');
 set(lg, 'interpreter', 'latex', 'fontsize', 15, 'orientation', 'horizontal')
 set(gca, 'fontsize', 12)
 
@@ -133,19 +138,23 @@ else
     disp('Test 2 failed. Eddy is not an steady elipse')
 end
 
+% Std Total
+stdTotal = sqrt(stdAziAvgTemp.^2+AvgAziStdTemp.^2);
+
 % Plot Test 2 profiles
 figure(2); hold on
-h1 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
-h2 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
-h3 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
-h4 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-.');
-h5 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h1 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h2 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
+h3 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
+h4 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
+h5 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettygreen, 'linestyle', '-.');
+h6 = plot(rmid, stdTotal, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-');
 xlabel('Radial distance', 'FontName', 'times')
 ylabel('SSH Variability', 'FontName', 'times')
 set(gca, 'fontname', 'times')
 % % zero horizontal line
 % plot([rmid(1), rmid(end-1)], [0, 0], 'k:')
-lg = legend([h1, h2, h3, h4, h5], '$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$');
+lg = legend([h1, h2, h3, h4, h5, h6], '$\overline{\mathrm{z}}^\theta$','$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$','$\Sigma_{z}$');
 set(lg, 'interpreter', 'latex', 'fontsize', 15, 'orientation', 'horizontal')
 set(gca, 'fontsize', 12)
 
@@ -161,7 +170,7 @@ end
 % Compute statistics
 [mz, rmid, numz, stdz1, stdz2] = radialStatisticsFromGridded(x, y, z, firstAverage = 'temporal');
 stdAziAvgTemp = stdz1; %azimuthal variance of the temporal average
-AvgAzistdTemp = stdz2; %azimuthal average of the temporal variance
+AvgAziStdTemp = stdz2; %azimuthal average of the temporal variance
 [mz, rmid, numz, stdz1, stdz2] = radialStatisticsFromGridded(x, y, z, firstAverage = 'azimuthal');
 stdTempAvgAzi = stdz1; %temporal variance of the azimuthal average
 AvgTempStdAzi = stdz2; %temporal average of the azimuthal variance
@@ -202,18 +211,22 @@ else
     disp('Test 3 failed. Eddy is not eliptical and uniformly precessing')
 end
 
+% Std Total
+stdTotal = sqrt(stdAziAvgTemp.^2+AvgAziStdTemp.^2);
+
 % Plot Test 3 profiles
 figure(3); hold on
-h1 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
-h2 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
-h3 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
-h4 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-.');
-h5 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h1 = plot(rmid, mz, 'LineWidth', 2, 'Color', 'k', 'linestyle', '-');
+h2 = plot(rmid, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue, 'linestyle', '-');
+h3 = plot(rmid, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange, 'linestyle', '--');
+h4 = plot(rmid, AvgTempStdAzi, 'LineWidth', 2, 'Color', prettyyellow, 'linestyle', ':');
+h5 = plot(rmid, stdTempAvgAzi, 'LineWidth', 2, 'Color', prettygreen, 'linestyle', '-.');
+h6 = plot(rmid, stdTotal, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '-');
 xlabel('Radial distance', 'FontName', 'times')
 ylabel('SSH Variability', 'FontName', 'times')
 set(gca, 'fontname', 'times')
 % % zero horizontal line
 % plot([rmid(1), rmid(end-1)], [0, 0], 'k:')
-lg = legend([h1, h2, h3, h4, h5], '$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$');
+lg = legend([h1, h2, h3, h4, h5, h6], '$\overline{\mathrm{z}}^\theta$','$\overline{\sigma_\mathrm{z}}^\theta$', '$\varsigma_{\overline{\mathrm{z}}^t}$', '$\overline{\varsigma_\mathrm{z}}^t$', '$\sigma_{\overline{\mathrm{z}}^\theta}$', '$\overline{\mathrm{z}}^\theta$','$\Sigma_{z}$');
 set(lg, 'interpreter', 'latex', 'fontsize', 15, 'orientation', 'horizontal')
 set(gca, 'fontsize', 12)
