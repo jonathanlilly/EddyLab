@@ -31,10 +31,10 @@ function[mz,rmid,numz,stdz1,stdz2] = radialStatisticsFromScattered(x,y,t,z,rbin,
 
 
 arguments (Input)
-    x {mustBeNumeric,mustBeReal,mustBeFinite}
-    y {mustBeNumeric,mustBeReal,mustBeFinite,mustHaveSameSize(x,y)}
+    x {mustBeNumeric,mustBeReal}%,mustBeFinite
+    y {mustBeNumeric,mustBeReal,mustHaveSameSize(x,y)}%,mustBeFinite
     t  {mustBeNumeric,mustBeReal,mustBeFinite,mustHaveSameSize(x,t)}
-    z  {mustBeNumeric,mustBeReal,mustBeFinite,mustHaveSameSize(x,z)}
+    z  {mustBeNumeric,mustBeReal,mustHaveSameSize(x,z)}%,mustBeFinite
     rbin  {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
     tbin  {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector,mustBeUniform(tbin)}
     options.firstAverage (1,:) string ...
