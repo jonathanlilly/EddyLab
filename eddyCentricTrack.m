@@ -52,12 +52,13 @@ figure, jpcolor(xc, yc, ssh(:, :, end)), hold on
 plot(xt, yt, linewidth = 2), axis tight, latratio(lato)
 
 %% Eddy-centered x,y track matrix
-% xo = 0.5 * (y(144) + y(145)); %origin defined based on eddy center
-% yo = 0.5 * (y(80) + y(81));
+xo = 0.5 * (y(144) + y(145)); %origin defined based on eddy center
+yo = 0.5 * (y(80) + y(81));
 % [center_xy, core_xy, coreE_xy]=findCenterZeroZeta(x,y,zeta2D,ssh);
 % [center_xy, ~, ~]=findSSHMaxContour(xc,yc,ssh);
 load('E:\Research\myCode\center_SSHMax.mat', 'center_xy')
-center_xy = center_xy - [mean(x), mean(y)];
+% center_xy = center_xy - [mean(x), mean(y)];
+[center_lonlat(:, 2),center_lonlat(:, 1)]=xy2latlon(center_xy(:, 1)-xo,center_xy(:, 2)-yo,lato,lono); %spehrical geometry
 % center_xy=center_xy-center_xy(1,1);
 % interp2(lonmMat,latmMat,center_lonlat(1,1),center_lonlat(1,1))
 
@@ -77,7 +78,8 @@ end
 xEt = xEt - (center_xy(1, 1));
 yEt = yEt - (center_xy(1, 2));
 
-%%
+%% Interpolate ssht per day from the model ssh
+%find time array within the repeating cycle
 timesortMat = [];
 sortindMat = [];
 %track where there's min nan
@@ -155,7 +157,11 @@ for nn = 1:totalDays
     count_binAll(:, :, nn) = count_bin;
 end
 
-%%
+%% Azimuthal profile
+prettyblue = [0, 0.4470, 0.7410];
+prettyorange = [0.8500, 0.3250, 0.0980];
+prettyyellow = [0.9290, 0.6940, 0.1250];
+prettypurple = [0.4940, 0.1840, 0.5560];
 AvgsshAccum = zeros(size(xEt));
 clearvars AvgAziAll stdAziAll stdTempAziAll stdTotalAll stdTemp2DAll
 AvgsshAccumBin = zeros(length(yEbin), length(xEbin), totalDays);
@@ -167,48 +173,79 @@ for n = 1:totalDays
     % Output how many counts there are to see if it's enough sample numbers
     % and suggest alternative bin space.
     AvgsshAccumBin(:, :, n) = mean(sshAccumBin, 3, 'omitnan');
-    [~, AvgAzi, stdAzi, stdTemp2D, stdTempAzi, stdTotal, bins, err] = AvgProf(xEbin, yEbin, sshAccumBin);
+    [~, AvgAzi, stdAziAvgTemp, stdTemp2D, AvgAziStdTemp, stdTotal, bins, err] = AvgProf(xEbin, yEbin, sshAccumBin);
 
     AvgAziAll(:, n) = AvgAzi(1:end-1);
-    stdAziAll(:, n) = stdAzi(1:end-1);
-    stdTempAziAll(:, n) = stdTempAzi(1:end-1);
+    stdAziAll(:, n) = stdAziAvgTemp(1:end-1);
+    stdTempAziAll(:, n) = AvgAziStdTemp(1:end-1);
     stdTotalAll(:, n) = stdTotal(1:end-1);
     stdTemp2DAll(:, :, n) = stdTemp2D;
     errAll(:, n) = err;
-    figure(3)
-    xlim([0, 250]); ylim([-2, 14])
-    text(125, 14.5, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
-    set(gcf, 'color', 'white')
-    figure(4)
-    xlim([-200, 200]), ylim([-200, 200]); clim([0, 2])
-    text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
-    set(gcf, 'color', 'white')
-    figure(5)
-    jpcolor(xEbin, yEbin, countAccumBin) %log10(mat)
-    text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
-    shading flat
-    axis equal
-    xlabel('Distance East (km)', 'FontName', 'times')
-    ylabel('Distance North (km)', 'FontName', 'times')
-    set(gca, 'fontname', 'times')
-    colormap(brewermap([], '-Spectral'))
-    colorbar('EastOutside');
-    xlim([-200, 200]), ylim([-200, 200]);
-    clim(round([min(countAll_lastday(:)), max(countAll_lastday(:))]))
-    set(gcf, 'color', 'white')
-    figure(6)
-    jpcolor(xEbin, yEbin, AvgsshAccumBin(:, :, n))
-    shading flat
-    axis equal
-    xlabel('Distance East (km)', 'FontName', 'times')
-    ylabel('Distance North (km)', 'FontName', 'times')
-    set(gca, 'fontname', 'times')
-    colormap(brewermap([], '-Spectral'))
-    colorbar('EastOutside');
-    xlim([-200, 200]), ylim([-200, 200]);
-    clim([-2.5, 12])
-    text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
-    set(gcf, 'color', 'white')
+
+%plot profile
+figure(3); hold on
+h1 = plot(bins, AvgAzi, 'LineWidth', 2, 'Color', 'k');
+h2 = plot(bins, AvgAziStdTemp, 'LineWidth', 2, 'Color', prettyblue);
+h3 = plot(bins, stdAziAvgTemp, 'LineWidth', 2, 'Color', prettyorange);
+h4 = plot(bins, stdTotal, 'LineWidth', 2, 'Color', prettypurple, 'linestyle', '--');
+xlabel('Radial distance (km)', 'FontName', 'times')
+ylabel('SSH Variability (cm)', 'FontName', 'times')
+set(gca, 'fontname', 'times')
+% xlim([0,250]);ylim([-2,14])
+% zero horizontal line
+plot([bins(1), bins(end-1)], [0, 0], 'k:')
+% lg=legend([h1 h2 h3 h4],'$\overline{\psi}^\theta$','$\varsigma_{\overline{\psi}^t}$','$\overline{\sigma_\psi}^\theta$','$\Sigma_{\psi}$');
+lg = legend([h1, h2, h3, h4], '$\overline{\eta}^\theta$', '$\overline{\sigma_\eta}^\theta$','$\varsigma_{\overline{\eta}^t}$', '$\Sigma_{\eta}$');
+set(lg, 'interpreter', 'latex', 'fontsize', 15, 'orientation', 'horizontal')
+set(gca, 'fontsize', 12)
+xlim([0, 250]); ylim([-2, 14])
+text(125, 14.5, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
+set(gcf, 'color', 'white')
+
+% Composite contour
+figure(4);
+jpcolor(xEbin, yEbin, stdTemp2D); shading flat
+% hold on
+% contour(xE,yE,stdTemp2D,[0:0.1:2],'k')
+axis equal
+xlabel('Distance East (km)', 'FontName', 'times')
+ylabel('Distance North (km)', 'FontName', 'times')
+set(gca, 'fontname', 'times')
+colormap(brewermap([], '-Spectral'))
+colorbar('EastOutside');
+xlim([-200, 200]), ylim([-200, 200]); clim([0, 2])
+text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
+set(gcf, 'color', 'white')
+
+% 2D track counts histogram
+figure(5)
+jpcolor(xEbin, yEbin, countAccumBin) %log10(mat)
+text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
+shading flat
+axis equal
+xlabel('Distance East (km)', 'FontName', 'times')
+ylabel('Distance North (km)', 'FontName', 'times')
+set(gca, 'fontname', 'times')
+colormap(brewermap([], '-Spectral'))
+colorbar('EastOutside');
+xlim([-200, 200]), ylim([-200, 200]);
+clim(round([min(countAll_lastday(:)), max(countAll_lastday(:))]))
+set(gcf, 'color', 'white')
+
+% mean ssh 2D
+figure(6)
+jpcolor(xEbin, yEbin, AvgsshAccumBin(:, :, n))
+shading flat
+axis equal
+xlabel('Distance East (km)', 'FontName', 'times')
+ylabel('Distance North (km)', 'FontName', 'times')
+set(gca, 'fontname', 'times')
+colormap(brewermap([], '-Spectral'))
+colorbar('EastOutside');
+xlim([-200, 200]), ylim([-200, 200]);
+clim([-2.5, 12])
+text(0, 215, ['Day ', num2str(n)], 'FontSize', 10, 'HorizontalAlignment', 'center')
+set(gcf, 'color', 'white')
 
     % F3 = getframe(3);
     % writeVideo(outputVideo3, F3)
