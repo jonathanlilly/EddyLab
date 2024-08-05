@@ -1,7 +1,7 @@
-function[xc,yc,levels,firstClosedLevel] = largestClosedStreamline(xp,yp,psip,ci)
-%largestClosedStreamline  Largest closed streamline in the eddy frame.
+function[xc,yc,levels,firstClosedLevel] = largestClosedStreamLine(xp,yp,psip,ci)
+%largestClosedStreamLine  Largest closed streamline in the eddy frame.
 %
-%   [XPC,YPC] = largestClosedStreamline(XP,YP,PSIP,CI) finds the largest 
+%   [XPC,YPC] = largestClosedStreamLine(XP,YP,PSIP,CI) finds the largest 
 %   closed streamline of PSIP, the streamfunction of the flow associated 
 %   with an eddy relative to a frame of reference moving with the eddy. 
 % 
@@ -17,10 +17,10 @@ function[xc,yc,levels,firstClosedLevel] = largestClosedStreamline(xp,yp,psip,ci)
 %   largest closed streamline at each time, expressed in the eddy-centered
 %   coordinate system.  These can be plotted with CELLPLOT(XPC,YPC).
 %
-%   [XPC,YCP,LEVELS] = largestClosedStreamline(...) also returns the 
+%   [XPC,YCP,LEVELS] = largestClosedStreamLine(...) also returns the 
 %   streamline contour levels that are searched, with spacing CI. 
 %
-%   [XPC,YPC,LEVELS,LEVELINDEX] = largestClosedStreamline(...) also returns 
+%   [XPC,YPC,LEVELS,LEVELINDEX] = largestClosedStreamLine(...) also returns 
 %   LEVELINDEX, a length SIZE(PSIP,3) index into LEVELS.  The streamline
 %   values for each contour are given by LEVELS(LEVELINDEX);
 %
@@ -28,7 +28,7 @@ function[xc,yc,levels,firstClosedLevel] = largestClosedStreamline(xp,yp,psip,ci)
 %   the corresponding cells of XPC and YPC will be empty, and the
 %   corresponding value of INDEX will be NaN.
 %
-%   Usage: [xpc,ypc,levels,index] = largestClosedStreamline(xp,yp,psip,0.5)
+%   Usage: [xpc,ypc,levels,index] = largestClosedStreamLine(xp,yp,psip,0.5)
 
 arguments (Input)
     xp {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector,mustBeUniform(xp)}
