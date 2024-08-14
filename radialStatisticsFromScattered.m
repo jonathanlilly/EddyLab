@@ -33,7 +33,7 @@ function[mz,rmid,numz,stdz1,stdz2] = radialStatisticsFromScattered(x,y,t,z,rbin,
 arguments (Input)
     x {mustBeNumeric,mustBeReal}%,mustBeFinite
     y {mustBeNumeric,mustBeReal,mustHaveSameSize(x,y)}%,mustBeFinite
-    t  {mustBeNumeric,mustBeReal,mustBeFinite,mustHaveSameSize(x,t)}
+    t  {mustBeNumeric,mustBeReal,mustHaveSameSize(x,t)}%,mustBeFinite
     z  {mustBeNumeric,mustBeReal,mustHaveSameSize(x,z)}%,mustBeFinite
     rbin  {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
     tbin  {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector,mustBeUniform(tbin)}
