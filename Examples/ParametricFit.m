@@ -22,6 +22,8 @@ tKnot = BSpline.knotPointsForDataPoints(r,K=K,M=4);
 constraints = struct('t',[],'D',[]);
 spline = ConstrainedSpline(r,ssh,K,tKnot,noiseDistribution,constraints);
 
+tq = linspace(0,4*L,1000).';
+
 figure
 tl = tiledlayout(1,2,TileSpacing="tight");
 nexttile
