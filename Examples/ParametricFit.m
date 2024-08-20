@@ -26,17 +26,29 @@ figure
 tl = tiledlayout(1,2,TileSpacing="tight");
 nexttile
 
-scatter(r/1e3,ssh,'k', 'filled'), hold on, plot(tq/1e3,spline(tq))
+plot(tq/1e3,eddy(tq),Color=[0 0 0],LineWidth=1.0), hold on
+scatter(r/1e3,ssh,'k', 'filled')
+plot(tq/1e3,spline(tq),Color='r',LineWidth=2)
 xlabel('radial distance (km)')
 ylabel('height (m)')
 title('Unconstrained fit')
+xlim([0 max(r)/1e3])
+ylim([-3*sigma eddy(0)+3*sigma])
 
 % The constraints let you set the value of the spline, or a derivative, to
-% zero. So this example forces the fit to be zero at r_max.
-constraints = struct('t',[max(r)],'D',0);
+% zero. So this example forces the fit to be zero at r_max, and the first
+% derivative to be zero at r=0. We add two more splines, because we are
+% adding two constraints.
+tKnot = BSpline.knotPointsForDataPoints(r,K=K,M=6);
+constraints = struct('t',[0; max(r); max(r)],'D',[1;0;1]);
 spline_constrained = ConstrainedSpline(r,ssh,K,tKnot,noiseDistribution,constraints);
 
 nexttile
-scatter(r/1e3,ssh,'k', 'filled'), hold on, plot(tq/1e3,spline_constrained(tq))
+plot(tq/1e3,eddy(tq),Color=[0 0 0],LineWidth=1.0), hold on
+scatter(r/1e3,ssh,'k', 'filled')
+plot(tq/1e3,spline_constrained(tq),Color='r',LineWidth=2)
+set(gca,'YTickLabel',[]);
 xlabel('radial distance (km)')
 title('Constrained fit')
+xlim([0 max(r)/1e3])
+ylim([-3*sigma eddy(0)+3*sigma])
