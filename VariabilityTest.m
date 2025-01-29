@@ -161,7 +161,7 @@ end
 % Compute statistics
 [mz, rmid, numz, stdz1, stdz2] = radialStatisticsFromGridded(x, y, z, firstAverage = 'temporal');
 stdAziAvgTemp = stdz1; %azimuthal variance of the temporal average
-AvgAzistdTemp = stdz2; %azimuthal average of the temporal variance
+AvgAziStdTemp = stdz2; %azimuthal average of the temporal variance
 [mz, rmid, numz, stdz1, stdz2] = radialStatisticsFromGridded(x, y, z, firstAverage = 'azimuthal');
 stdTempAvgAzi = stdz1; %temporal variance of the azimuthal average
 AvgTempStdAzi = stdz2; %temporal average of the azimuthal variance
