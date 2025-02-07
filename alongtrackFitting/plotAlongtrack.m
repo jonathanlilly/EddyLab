@@ -1,4 +1,12 @@
 function plotAlongtrack(alongtrackLonLat,eddytrack)
+%alongtrackLonLat includes Lat, Lon, Time, SSH information from the
+%relevant spatial window of  of along-track
+%eddytrack contains eddy center information from Mason, 2014 tracking algorithm.
+
+arguments (Input)
+    alongtrackLonLat
+    eddytrack 
+end
 % Project {lat,lon} -> {x,y}
 [alongtrackXY.x, alongtrackXY.y] = latlon2xy(alongtrackLatLon.lat, alongtrackLatLon.lon, latc, lonc);
 

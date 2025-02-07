@@ -12,24 +12,24 @@ time_step=floor(window_size*(1-overlap));
 totalTimeWindows=floor((totalDays - window_size) / time_step) + 1;
 
 for i=1:totalTimeWindows
-    
 time_window=1+(i-1)*time_step:(i-1)*time_step+window_size;
-%extract time window
-at_time(at_time < time_window(1) | at_time > time_window(end)) = NaN;
-at_time = at_time(any(~isnan(at_time)));
+
+% Extract time window
+at_window.longitude = alongtrackLatLon.longitude(time_window);
+at_window.latitude = alongtrackLatLon.latitude(time_window);
+at_window.time = alongtrackLatLon.time(time_window);
 
 % latc and lonc are the center of the alongtrack domain
-lonc=(min(alongtrackLatLon.lon(:))+max(alongtrackLatLon.lon(:)))/2;
-latc=(min(alongtrackLatLon.lat(:))+max(alongtrackLatLon.lat(:)))/2;
+lonc=(min(at_window.longitude(:))+max(at_window.longitude(:)))/2;
+latc=(min(at_window.latitude(:))+max(at_window.latitude(:)))/2;
 
-
-% Project {lat,lon,date,ssh} -> {x,y,t,ssh}
-[alongtrackXY.x, alongtrackXY.y] = latlon2xy(alongtrackLatLon.lat, alongtrackLatLon.lon, latc, lonc);
-
+% Project {lat,lon} -> {x,y}
+[at_window.x, at_window.y] = latlon2xy(at_window.latitude, at_window.longitude, latc, lonc);
 
 % Call eddy model fit in XY
-params = FitAlongTrackXYEddyModel(alongtrackXY, eddy_model, initialParams);
+params = FitAlongTrackXYEddyModel(at_window, eddy_model, initialParams);
 
 paramsCell{i,1} = params;
+end
 
 end
