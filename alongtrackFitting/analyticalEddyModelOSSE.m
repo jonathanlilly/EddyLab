@@ -1,34 +1,24 @@
-function alongtrackLatLon = analyticalEddyModelOSSE(tracks,eddy_model)
+function alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model)
 % tracks should be always in lat lon
 arguments (Input)
-    tracks {mustBeNumeric,mustBeReal,mustBeFinite}
-    eddy_model function_handle 
+    alongtrackLatLon struct
+    eddy_model function_handle = []
 end
 
-% latc and lonc are the center of the alongtrack domain
-lonc=(min(tracks.longitude(:))+max(tracks.longitude(:)))/2;
-latc=(min(tracks.latitude(:))+max(tracks.latitude(:)))/2;
+% lato and lono are the center of the alongtrack domain
+lono=(min(alongtrackLatLon.lon(:))+max(alongtrackLatLon.lon(:)))/2;
+lato=(min(alongtrackLatLon.lat(:))+max(alongtrackLatLon.lat(:)))/2;
 
 % Project {lat,lon} -> {x,y}
-[tracks.x, tracks.y] = latlon2xy(tracks.latitude, tracks.longitude, latc, lonc);
+[x_km, y_km] = latlon2xy(alongtrackLatLon.lat, alongtrackLatLon.lon, lato, lono);
 
-% 
-nRepeats = 5;
-obs.t = zeros(nRepeats*length(tracks.x),1);
-obs.x = zeros(nRepeats*length(tracks.x),1);
-obs.y = zeros(nRepeats*length(tracks.x),1);
-for i=1:nRepeats
-    obs.t(((i-1)*length(tracks.x)+1):(i*length(tracks.x))) = tracks.t + (i-1)*nRepeats*tracks.repeatTime;
-    obs.x(((i-1)*length(tracks.x)+1):(i*length(tracks.x))) = tracks.x;
-    obs.y(((i-1)*length(tracks.x)+1):(i*length(tracks.x))) = tracks.y;
-end
+alongtrack.x=x_km*1000;
+alongtrack.y=y_km*1000;
 
-% Now apply the OSSE!
-obs.ssh = eddy_model(obs.x,obs.y,obs.t);
+% Now apply the OSSE! Shift time to start from t=0;
+alongtrack.ssh = eddy_model(alongtrack.x,alongtrack.y,alongtrackLatLon.time-alongtrackLatLon.time(1));
 
-alongtrackLatLon.longitude=tracks.longitude;
-alongtrackLatLon.latitude=tracks.latitude;
-alongtrackLatLon.x=tracks.x;
-alongtrackLatLon.y=tracks.y;
-alongtrackLatLon.ssh=tracks.ssh;
+alongtrack.t=alongtrackLatLon.time;
+alongtrack.lon=alongtrackLatLon.lon;
+alongtrack.lat=alongtrackLatLon.lat;
 

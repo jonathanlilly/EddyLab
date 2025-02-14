@@ -1,19 +1,26 @@
-function plotAlongtrack(alongtrackLonLat,eddytrack)
+function plotAlongtrack(alongtrack,eddyPath_fun_t)
 %alongtrackLonLat includes Lat, Lon, Time, SSH information from the
 %relevant spatial window of  of along-track
 %eddytrack contains eddy center information from Mason, 2014 tracking algorithm.
 
-arguments (Input)
-    alongtrackLonLat
-    eddytrack 
-end
-% Project {lat,lon} -> {x,y}
-[alongtrackXY.x, alongtrackXY.y] = latlon2xy(alongtrackLatLon.lat, alongtrackLatLon.lon, latc, lonc);
+% arguments (Input)
+%     alongtrack
+%     eddytrack 
+% end
+
+eddytrack.x = eddyPath_fun_t.xe(alongtrack.t-alongtrack.t(1));
+eddytrack.y = eddyPath_fun_t.ye(alongtrack.t-alongtrack.t(1));
+
+% lato and lono are the center of the alongtrack domain
+lono=(min(alongtrack.lon(:))+max(alongtrack.lon(:)))/2;
+lato=(min(alongtrack.lat(:))+max(alongtrack.lat(:)))/2;
+
+[eddytrack.latitude, eddytrack.longitude] = xy2latlon(eddytrack.x/1e3,eddytrack.y/1e3,lato,lono);
+eddytrack.longitude = deg180(eddytrack.longitude-lono) + lono; %avoids unwrapping issues
 
 %eddytrack
 lono_eddy=eddytrack.longitude;
 lato_eddy=eddytrack.latitude;
-track=ncread(filename,'alongtrack/track');
 
 figure;hold on
 h(1)=plot(eddytrack.longitude,eddytrack.latitude,'LineWidth',3,'Color',0*[1 1 1]);
@@ -21,22 +28,23 @@ plot(eddytrack.longitude(1),eddytrack.latitude(1),'ko','markersize',8,'markerfac
 plot(eddytrack.longitude(1),eddytrack.latitude(1),'wo','markersize',5,'markerfacecolor','w')
 plot(eddytrack.longitude(end),eddytrack.latitude(end),'wx','markersize',10,'linewidth',2)
 plot(eddytrack.longitude(end),eddytrack.latitude(end),'kx','markersize',8,'linewidth',1.5)
-h(2)=scatter(alongtrackLonLat.longitude, alongtrackLonLat.latitude,2,'MarkerFaceColor','flat');
-xlabel('Longitude'), ylabel('Latitude'), box on
+h(2)=scatter(alongtrack.lon, alongtrack.lat,2,'MarkerFaceColor','flat');
+xlabel('Longitude','FontName', 'times'), ylabel('Latitude','FontName', 'times'), box on
 % title(['Altimeter Eddy ',eddy_id],'interpreter','tex')
 
 %set aspect ratio correctly for midpoint of y-axes limits
 set(gca,'dataaspectratio',[1 cosd(mean(get(gca,'ylim'))) 1])
 topoplot %continent
 latratio(30)
-xlim([-40,20]), ylim([-40,-23.5]);
+axis tight
+% xlim([min(alongtrack.lon),max(alongtrack.lon)]), ylim([min(alongtrack.lat),max(alongtrack.lat)]);
 %for optional legend
 if true %set to false is no legend is desired
     clear str
     str{1}=['Eddy-tracking'];
     str{2}=['along-track'];
     % str{3}=['continent'];
-    legend(h,str,'location','best','interpreter','tex')
+    legend(h,str,'location','northeast','interpreter','tex')
 end
 
 %% Alongtrack plot with SSH
@@ -44,15 +52,25 @@ figure, hold on;
 cmap = brewermap(256, '-Spectral');
 
 % Create scatter plot directly using SSH values for colors
-s = scatter3(alongtrackXY.x, alongtrackXY.y, alongtrackLatLon.ssh*100, 7, alongtrackLatLon.ssh, 'o', 'filled', ...
+s = scatter3(alongtrack.x/1e3, alongtrack.y/1e3, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
     'markerEdgeColor', 'none');
 
+set(gca, 'fontname', 'times','fontsize',11)
 colormap(cmap)
 c = colorbar('EastOutside');
 ylabel(c, 'SSH (cm)')  % Add label to colorbar
 % Set color limits to match actual SSH range
-caxis([min(ssht_Gauss(:)), max(ssht_Gauss(:))])
-xlabel('x (km)'), ylabel('y (km)'), zlabel('ssh (cm)')
+caxis([min(alongtrack.ssh(:)*1e2), max(alongtrack.ssh(:)*1e2)])
+xlabel('$x$ (km)', 'FontName', 'times','Interpreter','latex')
+ylabel('$y$ (km)', 'FontName', 'times','Interpreter','latex')
+zlabel('SSH (cm)', 'FontName', 'times','Interpreter','latex')
 daspect([1,1,0.02])
-xlim([min(alongtrackXY.x),max(alongtrackXY.x)]);ylim([min(alongtrackXY.y),max(alongtrackXY.y)])
+grid on
+xlim([min(alongtrack.x/1e3),max(alongtrack.x/1e3)]);ylim([min(alongtrack.y/1e3),max(alongtrack.y/1e3)])
 view(-30,35)
+
+%% 2D composite
+% 2D statistisc on defined bins
+% binsize=12.5;
+% max_r=round(max(abs(xEt))/binsize)*binsize;
+% [mz, xmid, ymid, numz, stdz] = twodstats(xEt, yEt, ssht, -max_r:binsize:max_r, -max_r:binsize:max_r);
