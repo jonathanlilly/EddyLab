@@ -1,13 +1,28 @@
-function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,options)
-%Input:
-% x,y arrays in meters
-% totalDays constant
-%Output:
-%alongtrackLatLon is a struct of track information containing lat,lon,time
-% arguments
-%     options.lono {mustBeScalarOrEmpty}
-%     options.lato {mustBeScalarOrEmpty}
-% end
+function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,varargin)
+% alongtrackFromXYDomain Extracts along-track satellite data for a given domain
+%
+% This function extracts along-track satellite altimetry data within a specified
+% spatial domain defined by x and y coordinates.
+%
+% Inputs:
+%   x - Array of x coordinates defining the domain (meters)
+%   y - Array of y coordinates defining the domain (meters)
+%   totalDays - Number of days to include in the simulation
+%   options - Optional parameters:
+%     options.lono - Reference longitude (default: 305)
+%     options.lato - Reference latitude (default: 24)
+%
+% Output:
+%   alongtrackLatLon - Struct containing extracted along-track data with fields:
+%                     time, lon, lat
+%
+arguments
+    x (1,:) {mustBeNumeric}
+    y (1,:) {mustBeNumeric}
+    totalDays (1,1) {mustBeNumeric, mustBePositive}
+    options.lono (1,1) {mustBeNumeric} = 305
+    options.lato (1,1) {mustBeNumeric} = 24
+end
 %% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
 readdir = 'G:\My Drive\AlongTrack\';
 writedir = 'G:\My Drive\AlongTrack\MyCode\';
@@ -19,7 +34,7 @@ atd = ncread(JasonAlongTrack.filename, 'atd');
 time = ncread(JasonAlongTrack.filename, 'time') + datenum(1950, 1, 1);
 %Time is defined as beginning at 4:05 AM on Sept 23, 1992,
 
-if isempty(options.lono)
+if isempty(varargin)
 lato = 24;
 tn_0 = 84; %track number
 [~, lato_i] = min(abs(lat(:, tn_0)-lato));

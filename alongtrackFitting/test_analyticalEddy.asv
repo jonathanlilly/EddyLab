@@ -58,8 +58,7 @@ plotAlongtrack(alongtrack,eddyPath_fun_t);
 video_name = 'eddy_field_precessing_ellipse';
 makePropagatingVideo(x,y,totalDays,eddy_model,video_name)
 
-%% composite
-
+%% 
 
 %% Gaussian fit
 eddyFit_fun = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);

@@ -1,12 +1,21 @@
 function plotAlongtrack(alongtrack,eddyPath_fun_t)
-%alongtrackLonLat includes Lat, Lon, Time, SSH information from the
-%relevant spatial window of  of along-track
-%eddytrack contains eddy center information from Mason, 2014 tracking algorithm.
-
-% arguments (Input)
-%     alongtrack
-%     eddytrack 
-% end
+% plotAlongtrack Visualizes along-track data and eddy paths
+%   This function creates plots of alongtrack data and eddy paths.
+%
+% Inputs:
+%   alongtrack - Struct containing along-track data with fields:
+%                x, y, t, lon, lat, ssh
+%   eddyPath_fun_t - Struct containing eddy path function handles:
+%                    xe, ye
+%   options - Optional parameters
+%
+arguments
+    alongtrack struct
+    eddyPath_fun_t struct
+    % options.showLegend (1,1) logical = true
+    % options.viewAngle (1,2) double = [-30, 35]
+    % options.markerSize (1,1) double = 2
+end
 
 eddytrack.x = eddyPath_fun_t.xe(alongtrack.t-alongtrack.t(1));
 eddytrack.y = eddyPath_fun_t.ye(alongtrack.t-alongtrack.t(1));
