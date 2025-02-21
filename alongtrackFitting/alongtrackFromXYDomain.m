@@ -1,4 +1,4 @@
-function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,varargin)
+function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,options)
 % alongtrackFromXYDomain Extracts along-track satellite data for a given domain
 %
 % This function extracts along-track satellite altimetry data within a specified
@@ -20,7 +20,7 @@ arguments
     x (1,:) {mustBeNumeric}
     y (1,:) {mustBeNumeric}
     totalDays (1,1) {mustBeNumeric, mustBePositive}
-    options.lono (1,1) {mustBeNumeric} = 305
+    options.lono (1,1) {mustBeNumeric} = 310
     options.lato (1,1) {mustBeNumeric} = 24
 end
 %% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
@@ -34,12 +34,12 @@ atd = ncread(JasonAlongTrack.filename, 'atd');
 time = ncread(JasonAlongTrack.filename, 'time') + datenum(1950, 1, 1);
 %Time is defined as beginning at 4:05 AM on Sept 23, 1992,
 
-if isempty(varargin)
-lato = 24;
-tn_0 = 84; %track number
-[~, lato_i] = min(abs(lat(:, tn_0)-lato));
-lono = lon(lato_i, tn_0) - 5; %initial longitude is a free parameter
-end
+% if isempty(varargin)
+% lato = 24;
+% tn_0 = 84; %track number
+% [~, lato_i] = min(abs(lat(:, tn_0)-lato));
+% lono = lon(lato_i, tn_0) - 5; %initial longitude is a free parameter
+% end
 %%
 %first, grid x and y
 xc = x - mean(x);

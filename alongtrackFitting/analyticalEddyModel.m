@@ -1,4 +1,4 @@
-function eddy_model = analyticalEddyModel(eddyPath,params,eddyShapeString)
+function eddy_model = analyticalEddyModel(eddyPath,params)%,eddyShapeString
 % analyticalEddyModel Creates an analytical model of an eddy
 %
 % Inputs:
@@ -24,9 +24,12 @@ arguments
     % params.La (1,1) {mustBeNumeric} = []
     % params.Lb (1,1) {mustBeNumeric} = []
     % params.thetaDot (1,1) {mustBeNumeric} = 0
-    eddyShapeString (1,1) string {mustBeMember(eddyShapeString,["Gaussian","Ellipse"])} = "Gaussian"
+    % eddyShapeString (1,1) string {mustBeMember(eddyShapeString,["Gaussian","Ellipse"])} = "Gaussian"
 end
-
+if isfield(params,'L')
+params.La = params.L;
+params.Lb = params.L;
+end
 %take variables out of the structure
 use params
 % set default eddy function as Gaussian
@@ -34,13 +37,13 @@ use params
 %     eddyShape = @(x,y,t,A,L,xe,ye) A.*exp(-((x-xe(t)).^2 + (y-ye(t)).^2)/L^2);
 % end
 
-if strcmp(eddyShapeString,'Gaussian')
-    eddyShape = @(x,y,t,A,L,xe,ye) A.*exp(-((x-xe(t)).^2 + (y-ye(t)).^2)/L^2);
-    
-    % make an eddy function with a chosen set of parameters (x,y,t)
-    eddy_model = @(x,y,t) eddyShape(x,y,t,A,L,eddyPath.xe,eddyPath.ye);
+% if strcmp(eddyShapeString,'Gaussian')
+%     eddyShape = @(x,y,t,A,L,xe,ye) A.*exp(-((x-xe(t)).^2 + (y-ye(t)).^2)/L^2);
+% 
+%     % make an eddy function with a chosen set of parameters (x,y,t)
+%     eddy_model = @(x,y,t) eddyShape(x,y,t,A,L,eddyPath.xe,eddyPath.ye);
 
-elseif strcmp(eddyShapeString,'Ellipse')
+% elseif strcmp(eddyShapeString,'Ellipse')
     if isempty(thetaDot)
         thetaDot=0;
     end
@@ -50,5 +53,5 @@ elseif strcmp(eddyShapeString,'Ellipse')
 
     % make an eddy function with a chosen set of parameters (x,y,t)
     eddy_model = @(x,y,t) eddyShape(x,y,t,A,La,Lb,thetaDot,eddyPath.xe,eddyPath.ye);
-end
+% end
 

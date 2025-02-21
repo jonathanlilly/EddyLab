@@ -28,7 +28,10 @@ alongtrack.longitude=at_lon;
 %eddyPath_track from Mason's tracking algorithm
 plotAlongtrack(alongtrackLonLat,eddyPath_track);
 
-% Gaussian fit
+%% 4. Eddy-centric coordinate system
+%eddy center from Mason2014 eddy-tracking algorithm
+
+%% Gaussian fit
 eddyFit_function = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);
 initialParams = [];
 params = FitAlongTrackLatLonEddyModel(alongtrackLatLon, eddyFit_function, initialParams);
