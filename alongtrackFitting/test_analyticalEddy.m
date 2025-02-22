@@ -64,13 +64,27 @@ plotAlongtrack(alongtrack,eddyPath_fun_t);
 video_name = 'eddy_field_precessing_ellipse';
 makePropagatingVideo(x,y,totalDays,eddy_model,video_name)
 
-%% 4. Eddy composites
-%eddy center from eddyPath 
-[mz, xmid, ymid, numz, stdz] = composite2D(alongtrack,eddyPath_fun_t);% options: bin_size=12.5
-% radialProfile
+%% 4. Eddy composites and plots
+%eddy center from eddyPath
+% time-averaged eddy composite
+[mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(alongtrack,eddyPath_fun_t);% options: bin_size=12.5*1e3
+% time-averaged radial profile
+[mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack,eddyPath_fun_t);
+% radialProfile over time
+[mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt] = radialProfileTime(alongtrack,eddyPath_fun_t);
+
+%% 5. Convergence Rate
+% how many cycles are needed to reach convergence to time-averaged profile
+[convergence] = convergenceRate(mz_rt, numz_rt);
 
 %% 6. Gaussian fit
 eddyFit_fun = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);
-initialParams = [];
+initialParams.A = 0.13;
+initialParams.L = 85e3;
+initialParams.x0 = 450e3;
+initialParams.y0 = 50e3;
+initialParams.cx = -2e3;
+initialParams.cy = -0.3e3;
+
 params = FitAlongTrackLatLonEddyModel(alongtrackLatLon, eddyFit_fun, initialParams);
 % paramsCell = FitAlongTrackLatLonToEddyModelWindowed(alongtrackLatLon, eddy_model, initialParams, windowLength);
