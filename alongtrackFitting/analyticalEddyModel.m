@@ -44,7 +44,7 @@ use params
 %     eddy_model = @(x,y,t) eddyShape(x,y,t,A,L,eddyPath.xe,eddyPath.ye);
 
 % elseif strcmp(eddyShapeString,'Ellipse')
-    if isempty(thetaDot)
+    if ~isfield(params,'thetaDot')
         thetaDot=0;
     end
     eddyShape = @(x,y,t,A,La,Lb,thetaDot,xe,ye) A.*exp(-(...

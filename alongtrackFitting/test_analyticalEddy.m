@@ -19,6 +19,7 @@ alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays); %options: lato=24, lon
 
 %% Test 1 - Gaussian Eddy
 % define eddy shape function handle
+clearvars params
 params.A = 0.15; %meter
 params.L = 80e3; %meter
 
@@ -30,6 +31,7 @@ eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
 
 %% Test 2 - Steady Elliptical Eddy:
+clearvars params
 params.A = 0.15;
 L = 80e3;
 params.La = 0.4*2*L;
@@ -43,11 +45,12 @@ eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
 
 %% Test 3 - Precessing Elliptical Eddy:
+clearvars params
 params.A = 0.15;
 L = 80e3;
 params.La = 0.4*2*L;
 params.Lb = 0.2*2*L;
-params.thetaDot= pi/totalDays;
+params.thetaDot= pi*1.5/totalDays;
 
 % eddy_model is a function handle with a chosen set of parameters (x,y,t)
 % eddyShapeString = 'Ellipse';
@@ -72,6 +75,9 @@ makePropagatingVideo(x,y,totalDays,eddy_model,video_name)
 [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack,eddyPath_fun_t);
 % radialProfile over time
 [mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt] = radialProfileTime(alongtrack,eddyPath_fun_t);
+
+%% Test parameters extraction
+%% 
 
 %% 5. Convergence Rate
 % how many cycles are needed to reach convergence to time-averaged profile

@@ -42,10 +42,10 @@ xlabel('Longitude','FontName', 'times'), ylabel('Latitude','FontName', 'times'),
 % title(['Altimeter Eddy ',eddy_id],'interpreter','tex')
 
 %set aspect ratio correctly for midpoint of y-axes limits
+axis tight
 set(gca,'dataaspectratio',[1 cosd(mean(get(gca,'ylim'))) 1])
 topoplot %continent
 latratio(30)
-axis tight
 % xlim([min(alongtrack.lon),max(alongtrack.lon)]), ylim([min(alongtrack.lat),max(alongtrack.lat)]);
 %for optional legend
 if true %set to false is no legend is desired

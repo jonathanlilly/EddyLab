@@ -21,8 +21,11 @@ yE = y - yo;
 max_r=round(max(abs(xE))/bin_size)*bin_size;
 [mz, xmid, ymid, numz, stdz] = twodstats(xE, yE, ssh, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
 
+% sometimes there's numical precision artifacts,
+% which gives stdz as a very small complex number. Do a correction:
+stdz = abs(stdz);
 %% mean ssh 2D
-figure;hold on
+figure;
 jpcolor(xmid/1e3, ymid/1e3, mz*1e2)
 % r=mean(eddy.speed_radius{1});
 % th = 0:pi/50:2*pi;

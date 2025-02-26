@@ -1,9 +1,11 @@
-function params = FitAlongTrackLatLonEddyModel(alongtrackLatLon, eddyFit_fun, initialParams, options)
+function params = FitAlongTrackLatLonEddyModel(alongtrack, eddyFit_fun, initialParams, options)
 arguments
-    alongtrackLatLon struct
+    alongtrack struct
     eddyFit_fun function_handle
     initialParams struct
-    options.windowLength (1,1) string = "full"
+    options.LB (1,6) double = [0, 50, -1000e3, -500e3, -10, -10]
+    options.UB (1,6) double = [30, 150, 1000e3, 500e3, 0, 0]
+    % options.windowLength (1,1) string = "full"
 end
 % lato and lono are the center of the alongtrack domain
 lono=(min(alongtrackLatLon.lon(:))+max(alongtrackLatLon.lon(:)))/2;
@@ -16,4 +18,4 @@ alongtrack.x=x_km*1000;
 alongtrack.y=y_km*1000;
 
 % Call eddy model fit in XY
-params = FitAlongTrackXYToEddyModel(alongtrack, eddy_Fit_fun, initialParams,options);
+params = FitAlongTrackXYToEddyModel(alongtrack, eddyFit_fun, initialParams, options);

@@ -20,9 +20,10 @@ arguments
     x (1,:) {mustBeNumeric}
     y (1,:) {mustBeNumeric}
     totalDays (1,1) {mustBeNumeric, mustBePositive}
-    options.lono (1,1) {mustBeNumeric} = 310
+    options.lono (1,1) {mustBeNumeric} = 308
     options.lato (1,1) {mustBeNumeric} = 24
 end
+use options
 %% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
 readdir = 'G:\My Drive\AlongTrack\';
 writedir = 'G:\My Drive\AlongTrack\MyCode\';
