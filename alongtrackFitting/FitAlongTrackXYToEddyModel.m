@@ -29,7 +29,7 @@ penalty_function_scaled = @(p_scaled) sum((ssh/1e-2 - eddyFit_fun(x/1e3, y/1e3, 
 
 if isfield(options,'LB')
     % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
-    pmin_scaled = fminsearch(penalty_function_scaled, p0_scaled, LB, UB, it_options);
+    pmin_scaled = fminsearchbnd(penalty_function_scaled, p0_scaled, LB, UB, it_options);
 
 else
     % pmin=fminsearch(penalty_function, p0, it_options);

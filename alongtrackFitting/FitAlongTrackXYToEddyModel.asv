@@ -3,6 +3,7 @@ arguments
     alongtrack struct
     eddyFit_fun function_handle
     initialParams struct
+    it_options struct
     % options struct
     options.LB (1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
     options.UB (1,6) double %= [30, 150, 1000e3, 500e3, 0, 0]
@@ -19,24 +20,25 @@ p0(6)=initialParams.cy;
 
 % penalty_function = @(p) sum((ssh - eddyFit_fun(x,y,t,p(1),p(2),p(3),p(4),p(5),p(6))).^2);
 
-% Create scaled parameters
+% Change to scaled parameters
 scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your parameter scales
 p0_scaled = p0 ./ scale_factors;
 
 % Scaled penalty function
-penalty_function_scaled = @(p_scaled) sum((ssh - eddyFit_fun(x, y, t, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
+penalty_function_scaled = @(p_scaled) sum((ssh/1e-2 - eddyFit_fun(x/1e3, y/1e3, t, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
 
-% Run optimization with scaled parameters
-pmin_scaled = fminsearch(penalty_function_scaled, p0_scaled, it_options);
+if isfield(options,'LB')
+    % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
+    pmin_scaled = fminsearchbnd(penalty_function_scaled, p0_scaled, LB, UB, it_options);
+
+else
+    % pmin=fminsearch(penalty_function, p0, it_options);
+    pmin_scaled = fminsearch(penalty_function_scaled, p0_scaled, it_options);
+
+end
 
 % Unscale results
 pmin = pmin_scaled .* scale_factors;
-
-if isfield(options,'LB')
-    pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
-else
-    pmin=fminsearch(penalty_function, p0, it_options);
-end
 
 params.A=pmin(1);
 params.L=pmin(2);
