@@ -1,4 +1,4 @@
-function plotAlongtrack(alongtrack,eddyPath_fun_t)
+function plotAlongtrack(alongtrack,eddyPath)
 % plotAlongtrack Visualizes along-track data and eddy paths
 %   This function creates plots of alongtrack data and eddy paths.
 %
@@ -11,14 +11,22 @@ function plotAlongtrack(alongtrack,eddyPath_fun_t)
 %
 arguments
     alongtrack struct
-    eddyPath_fun_t struct
+    eddyPath struct
     % options.showLegend (1,1) logical = true
     % options.viewAngle (1,2) double = [-30, 35]
     % options.markerSize (1,1) double = 2
 end
 
-eddytrack.x = eddyPath_fun_t.xe(alongtrack.t-alongtrack.t(1));
-eddytrack.y = eddyPath_fun_t.ye(alongtrack.t-alongtrack.t(1));
+% Calculate eddy positions at each alongtrack time directly
+% depending on if eddyPath is a function or an array
+if isa(eddyPath.xe, 'function_handle')
+    eddytrack.x = eddyPath.xe(alongtrack.t-alongtrack.t(1));
+    eddytrack.y = eddyPath.ye(alongtrack.t-alongtrack.t(1));
+else
+    eddytrack.x = eddyPath.xe;
+    eddytrack.y = eddyPath.ye;
+end
+
 
 % lato and lono are the center of the alongtrack domain
 lono=(min(alongtrack.lon(:))+max(alongtrack.lon(:)))/2;
@@ -38,12 +46,13 @@ plot(eddytrack.longitude(1),eddytrack.latitude(1),'wo','markersize',5,'markerfac
 plot(eddytrack.longitude(end),eddytrack.latitude(end),'wx','markersize',10,'linewidth',2)
 plot(eddytrack.longitude(end),eddytrack.latitude(end),'kx','markersize',8,'linewidth',1.5)
 h(2)=scatter(alongtrack.lon, alongtrack.lat,2,'MarkerFaceColor','flat');
-xlabel('Longitude','FontName', 'times'), ylabel('Latitude','FontName', 'times'), box on
+xlabel('Longitude','FontName', 'times','fontsize',16), ylabel('Latitude','FontName', 'times','fontsize',14), box on
 % title(['Altimeter Eddy ',eddy_id],'interpreter','tex')
 
 %set aspect ratio correctly for midpoint of y-axes limits
 axis tight
 set(gca,'dataaspectratio',[1 cosd(mean(get(gca,'ylim'))) 1])
+set(gca, 'fontname', 'times','fontsize',16)
 topoplot %continent
 latratio(30)
 % xlim([min(alongtrack.lon),max(alongtrack.lon)]), ylim([min(alongtrack.lat),max(alongtrack.lat)]);
@@ -64,10 +73,12 @@ cmap = brewermap(256, '-Spectral');
 s = scatter3(alongtrack.x/1e3, alongtrack.y/1e3, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
     'markerEdgeColor', 'none');
 
-set(gca, 'fontname', 'times','fontsize',11)
+set(gca, 'fontname', 'times','fontsize',14)
 colormap(cmap)
 c = colorbar('EastOutside');
-ylabel(c, 'SSH (cm)')  % Add label to colorbar
+c.Label.String = 'SSH (cm)';
+c.Label.FontSize=16;
+c.Label.FontName='times';
 % Set color limits to match actual SSH range
 caxis([min(alongtrack.ssh(:)*1e2), max(alongtrack.ssh(:)*1e2)])
 xlabel('$x$ (km)', 'FontName', 'times','Interpreter','latex')

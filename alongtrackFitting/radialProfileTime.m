@@ -1,16 +1,22 @@
-function [mz_rt, rmid, tmid, numz_rt, stdz_rt] = radialProfileTime(alongtrack,eddyPath_fun_t,options)
+function [mz_rt, rmid, tmid, numz_rt, stdz_rt] = radialProfileTime(alongtrack,eddyPath,options)
 arguments
     alongtrack struct
-    eddyPath_fun_t struct
+    eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
 end
 
 use alongtrack
 use options
-% eddyPath is in the increments of a day, so round the alongtrack to day
+
 % Calculate eddy positions at each alongtrack time directly
-xo = eddyPath_fun_t.xe(t-t(1));
-yo = eddyPath_fun_t.ye(t-t(1));
+% depending on if eddyPath is a function or an array
+if isa(eddyPath.xe, 'function_handle')
+    xo = eddyPath.xe(t - t(1));
+    yo = eddyPath.ye(t - t(1));
+else
+    xo = eddyPath.xe;
+    yo = eddyPath.ye;
+end
 
 % Calculate eddy-relative coordinates directly
 xE = x - xo;

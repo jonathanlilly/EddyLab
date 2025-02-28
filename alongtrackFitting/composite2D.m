@@ -1,16 +1,22 @@
-function [mz, xmid, ymid, numz, stdz, varargout] = composite2D(alongtrack,eddyPath_fun_t,options)
+function [mz, xmid, ymid, numz, stdz, varargout] = composite2D(alongtrack,eddyPath,options)
 arguments
     alongtrack struct
-    eddyPath_fun_t struct
+    eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
 end
 
 use alongtrack
 use options
-% eddyPath is in the increments of a day, so round the alongtrack to day
+
 % Calculate eddy positions at each alongtrack time directly
-xo = eddyPath_fun_t.xe(t-t(1));
-yo = eddyPath_fun_t.ye(t-t(1));
+% depending on if eddyPath is a function or an array
+if isa(eddyPath.xe, 'function_handle')
+    xo = eddyPath.xe(t - t(1));
+    yo = eddyPath.ye(t - t(1));
+else
+    xo = eddyPath.xe;
+    yo = eddyPath.ye;
+end
 
 % Calculate eddy-relative coordinates directly
 xE = x - xo;
@@ -76,5 +82,7 @@ set(gca, 'fontname', 'times','FontSize',16)
 colormap(brewermap([], '-Spectral'))
 c = colorbar('EastOutside');
 c.Label.String = 'Histogram (counts)';
+c.Label.FontSize=16;
+c.Label.FontName='times';
 xlim([-250, 250]), ylim([-250, 250]);
 
