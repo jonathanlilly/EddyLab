@@ -97,26 +97,26 @@ end
 %     ssh_series(:,i)=ssh_fit(:);
 % end
 
-if totalTimeWindows>1
-param_names = {'A','L','x_o','v_x','y_o','v_y'};
-xlimits = [8,18;50,100;min(center_xoyo(:,1)),max(center_xoyo(:,1));min(vxo),max(vxo);min(center_xoyo(:,2)),max(center_xoyo(:,2));min(vyo),max(vyo)];
-figure;hold on
-for i = 1:6
-    subplot(6,1,i)  % 6 rows, 1 column
-    plot([1:totalTimeWindows],pSeries(:,i), 'k.', 'MarkerSize', 15);
-    hold on
-    plot([1:totalTimeWindows], p0Series(:,i), 'r:', 'LineWidth', 1.5)  % Initial value
-    hold off
-    ylabel(param_names{i},'fontsize',12)
-    ylim([xlimits(i,1:2)])
-     if i == 6
-        xlabel('Time (2 cycles)')
-     else
-         set(gca,'xticklabel',[])
-     end
-     xlim([1,totalTimeWindows])
-    % h = get(gca, 'Position');
-    % set(gca, 'Position', [h(1) h(2) h(3) 0.1])
-end
-
+% if totalTimeWindows>1
+% param_names = {'A','L','x_o','v_x','y_o','v_y'};
+% xlimits = [8,18;50,100;min(center_xoyo(:,1)),max(center_xoyo(:,1));min(vxo),max(vxo);min(center_xoyo(:,2)),max(center_xoyo(:,2));min(vyo),max(vyo)];
+% figure;hold on
+% for i = 1:6
+%     subplot(6,1,i)  % 6 rows, 1 column
+%     plot([1:totalTimeWindows],pSeries(:,i), 'k.', 'MarkerSize', 15);
+%     hold on
+%     plot([1:totalTimeWindows], p0Series(:,i), 'r:', 'LineWidth', 1.5)  % Initial value
+%     hold off
+%     ylabel(param_names{i},'fontsize',12)
+%     ylim([xlimits(i,1:2)])
+%      if i == 6
+%         xlabel('Time (2 cycles)')
+%      else
+%          set(gca,'xticklabel',[])
+%      end
+%      xlim([1,totalTimeWindows])
+%     % h = get(gca, 'Position');
+%     % set(gca, 'Position', [h(1) h(2) h(3) 0.1])
+% end
+% 
 end

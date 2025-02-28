@@ -1,4 +1,4 @@
-function [mz, xmid, ymid, numz, stdz] = composite2D(alongtrack,eddyPath_fun_t,options)
+function [mz, xmid, ymid, numz, stdz, varargout] = composite2D(alongtrack,eddyPath_fun_t,options)
 arguments
     alongtrack struct
     eddyPath_fun_t struct
@@ -26,7 +26,7 @@ max_r=round(max(abs(xE))/bin_size)*bin_size;
 stdz = abs(stdz);
 %% mean ssh 2D
 figure;
-jpcolor(xmid/1e3, ymid/1e3, mz*1e2)
+h.h1 = jpcolor(xmid/1e3, ymid/1e3, mz*1e2);
 % r=mean(eddy.speed_radius{1});
 % th = 0:pi/50:2*pi;
 % plot(r * cos(th),r*sin(th))
@@ -47,7 +47,7 @@ xlim([-250, 250]), ylim([-250, 250]);
 
 %% plot 2D temporal std
 figure;
-jpcolor(xmid/1e3, ymid/1e3, stdz*1e2);
+h.h2 = jpcolor(xmid/1e3, ymid/1e3, stdz*1e2);
 % jpcolor(xEbin, yEbin, stdTempD);
 shading flat
 % hold on
@@ -66,7 +66,7 @@ xlim([-250, 250]), ylim([-250, 250]); %clim([0, 8])
 %% 2D track counts histogram
 figure;
 numz(numz == 0) = nan;
-jpcolor(xmid/1e3, ymid/1e3, numz) %
+h.h3 = jpcolor(xmid/1e3, ymid/1e3, numz); %
 clim(round([min(numz(:)), max(numz(:))]))
 shading flat
 axis equal

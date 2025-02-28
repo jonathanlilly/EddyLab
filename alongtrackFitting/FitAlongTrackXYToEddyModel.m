@@ -20,12 +20,12 @@ p0(6)=initialParams.cy;
 
 % penalty_function = @(p) sum((ssh - eddyFit_fun(x,y,t,p(1),p(2),p(3),p(4),p(5),p(6))).^2);
 
-% Change to scaled parameters
+% Change to scaled parameters (A, L, x0,y0,cx,cy)
 scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your parameter scales
 p0_scaled = p0 ./ scale_factors;
 
 % Scaled penalty function
-penalty_function_scaled = @(p_scaled) sum((ssh/1e-2 - eddyFit_fun(x/1e3, y/1e3, t, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
+penalty_function_scaled = @(p_scaled) sum((ssh/scale_factors(1) - eddyFit_fun(x, y, t, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
 
 if isfield(options,'LB')
     % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
@@ -37,7 +37,7 @@ else
 
 end
 
-% Unscale results
+% Unscale pmin
 pmin = pmin_scaled .* scale_factors;
 
 params.A=pmin(1);
