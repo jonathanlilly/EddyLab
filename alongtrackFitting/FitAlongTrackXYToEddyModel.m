@@ -25,7 +25,7 @@ scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your paramete
 p0_scaled = p0 ./ scale_factors;
 
 % Scaled penalty function
-penalty_function_scaled = @(p_scaled) sum((ssh/scale_factors(1) - eddyFit_fun(x, y, t, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
+penalty_function_scaled = @(p_scaled) sum((ssh - eddyFit_fun(x, y, t-min(t), p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
 
 if isfield(options,'LB')
     % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
