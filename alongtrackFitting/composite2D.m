@@ -43,7 +43,9 @@ axis equal
 xlabel('Distance East (km)', 'FontName', 'times')
 ylabel('Distance North (km)', 'FontName', 'times')
 set(gca, 'fontname', 'times','fontsize',16)
-colormap(brewermap([], '-Spectral'))
+if exist('brewermap')
+    colormap(brewermap([], '-Spectral'))
+end
 c = colorbar('EastOutside');
 c.Label.String = 'Time-averaged SSH (cm)';
 c.Label.FontSize=16;
@@ -62,7 +64,9 @@ axis equal
 xlabel('Distance East (km)', 'FontName', 'times')
 ylabel('Distance North (km)', 'FontName', 'times')
 set(gca, 'fontname', 'times','fontsize',16)
-colormap(brewermap([], '-Spectral'))
+if exist('brewermap')
+    colormap(brewermap([], '-Spectral'))
+end
 c = colorbar('EastOutside');
 c.Label.String = 'Temporal variance (cm)';
 c.Label.FontSize=16;
@@ -79,7 +83,9 @@ axis equal
 xlabel('Distance East (km)', 'FontName', 'times')
 ylabel('Distance North (km)', 'FontName', 'times')
 set(gca, 'fontname', 'times','FontSize',16)
-colormap(brewermap([], '-Spectral'))
+if exist('brewermap')
+    colormap(brewermap([], '-Spectral'))
+end
 c = colorbar('EastOutside');
 c.Label.String = 'Histogram (counts)';
 c.Label.FontSize=16;
