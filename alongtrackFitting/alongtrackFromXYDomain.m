@@ -26,7 +26,7 @@ arguments
 end
 use options
 %% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
-JasonAlongTrack.filename = [readdir, 'JasonAlongTrack.nc'];
+JasonAlongTrack.filename = strcat(readdir, 'JasonAlongTrack.nc');
 lat = ncread(JasonAlongTrack.filename, 'lat');
 lon = ncread(JasonAlongTrack.filename, 'lon');
 atd = ncread(JasonAlongTrack.filename, 'atd');

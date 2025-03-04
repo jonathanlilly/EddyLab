@@ -1,15 +1,16 @@
-function paramsCell = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initialParams,it_options)
+function [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initParams, eddyPath_fun_t, it_options, options)
 arguments
     alongtrack struct
     eddyFit_fun function_handle 
-    initialParams struct
+    initParams struct
+    eddyPath_fun_t struct
     it_options struct
-    % options.windowLength (1,1) = 
+    options.LB (1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
+    options.UB (1,6) double %= [30, 150, 1000e3, 500e3, 0, 0]
 end
 %alongtrackLatLon: lat,lon,time
 % Deduce time window length from alongtrackLatLon
-at_time = datenum(alongtrack.t); %check if this is sorted in an ascending order.
-totalDays = max(at_time)-min(at_time);
+totalDays = max(alongtrack.t)-min(alongtrack.t);
 
 min_days_per_window = 45;  % Need at least 4.5 cycles for the eddy core coverage
 min_total_windows = 3;      % Need at least 3 windows to see evolution
@@ -19,11 +20,24 @@ window_size = max(min_days_per_window, floor(totalDays/(min_total_windows/overla
 time_step=floor(window_size*(1-overlap));
 totalTimeWindows=floor((totalDays - window_size) / time_step) + 1;
 
+% ensure that the arrays are in ascending order in time before windowing
+[alongtrack.t,sort_idx]=sort(alongtrack.t,'ascend');
+alongtrack.x=alongtrack.x(sort_idx);
+alongtrack.y=alongtrack.y(sort_idx);
+alongtrack.lon=alongtrack.lon(sort_idx);
+alongtrack.lat=alongtrack.lat(sort_idx);
+alongtrack.ssh=alongtrack.ssh(sort_idx);
+
 % pre-allocate cells for number of windows
 paramsCell = cell(totalTimeWindows, 1);
 
 for i=1:totalTimeWindows
-window_indices=1+(i-1)*time_step:(i-1)*time_step+window_size;
+    % Calculate the start and end times for this window in days
+    window_start_day = min(alongtrack.t) + (i-1)*time_step;
+    window_end_day = window_start_day + window_size;
+
+    % Find indices that correspond to times within this window
+    window_indices = find(alongtrack.t >= window_start_day & alongtrack.t <= window_end_day);
 
 % Extract time window
 at_window.x = alongtrack.x(window_indices);
@@ -43,18 +57,23 @@ elapsed_time_window = at_window.t-t0_window;
 % [at_window.x, at_window.y] = latlon2xy(at_window.latitude, at_window.longitude, latc, lonc);
 
 % new inital parameters for this window
-initialParams_window.A = initialParams.A;
-initialParams_window.L = initialParams.L;
-initialParams_window.x0 = initialParams.x0+initialParams.cx*elapsed_time_window;
-initialParams_window.y0 = initialParams.y0+initialParams.cy*elapsed_time_window;
-initialParams_window.cx = initialParams.cx;
-initialParams_window.cy = initialParams.cy;
+initParams_window.A = initParams.A;
+initParams_window.L = initParams.L;
+% initParams_window.x0 = initParams.x0+i*initParams.cx*max(elapsed_time_window);
+% initParams_window.y0 = initParams.y0+i*initParams.cy*max(elapsed_time_window);
+%assuming you roughly know the eddy center from eddy-tracking algorithm
+%beginning of this particular window minus t0 offset of the entire eddy lifetime
+initParams_window.x0 = eddyPath_fun_t.xe(t0_window-min(alongtrack.t))+rand*20e3-10e3; %random uncertainty +/- 10e3
+initParams_window.y0 = eddyPath_fun_t.ye(t0_window-min(alongtrack.t))+rand*20e3-10e3;
+initParams_window.cx = initParams.cx;
+initParams_window.cy = initParams.cy;
+initParamsCell{i,1} = initParams_window;
 
 % bound
 
 
 % Call eddy model fit in XY
-params = FitAlongTrackXYToEddyModel(at_window, eddyFit_fun, initialParams_window);
+params = FitAlongTrackXYToEddyModel(at_window, eddyFit_fun, initParams_window, it_options);
 
 paramsCell{i,1} = params;
 end
@@ -105,26 +124,34 @@ end
 %     ssh_series(:,i)=ssh_fit(:);
 % end
 
-% if totalTimeWindows>1
-% param_names = {'A','L','x_o','y_o','c_x','c_y'};
-% xlimits = [8,18;50,100;min(center_xoyo(:,1)),max(center_xoyo(:,1));min(vxo),max(vxo);min(center_xoyo(:,2)),max(center_xoyo(:,2));min(vyo),max(vyo)];
-% figure;hold on
-% for i = 1:6
-%     subplot(6,1,i)  % 6 rows, 1 column
-%     plot([1:totalTimeWindows],pSeries(:,i), 'k.', 'MarkerSize', 15);
-%     hold on
-%     plot([1:totalTimeWindows], p0Series(:,i), 'r:', 'LineWidth', 1.5)  % Initial value
-%     hold off
-%     ylabel(param_names{i},'fontsize',12)
-%     ylim([xlimits(i,1:2)])
-%      if i == 6
-%         xlabel('Time (2 cycles)')
-%      else
-%          set(gca,'xticklabel',[])
-%      end
-%      xlim([1,totalTimeWindows])
-%     % h = get(gca, 'Position');
-%     % set(gca, 'Position', [h(1) h(2) h(3) 0.1])
-% end
+if totalTimeWindows>1
+param_label = {'A','L','x_o','y_o','v_x','v_y'};
+param_var = {'A','L','x0','y0','cx','cy'};
+% % xlimits = [8,18;50,100;min(center_xoyo(:,1)),max(center_xoyo(:,1));min(vxo),max(vxo);min(center_xoyo(:,2)),max(center_xoyo(:,2));min(vyo),max(vyo)];
+for j = 1:totalTimeWindows
+    for i = 1:6
+        paramValues(j, i) = paramsCell{j}.(param_var{i});
+        initParamValues(j, i) = initParamsCell{j}.(param_var{i});
+    end
+end
+figure;hold on
+for i = 1:6
+    subplot(6,1,i)  % 6 rows, 1 column
+    hold on
+    plot([1:totalTimeWindows],paramValues(:, i), 'k.', 'MarkerSize', 15);
+    plot([1:totalTimeWindows],initParamValues(:, i), 'r:', 'LineWidth', 1.5)  % Initial value
+    set(gca, 'fontname', 'times','fontsize',11)
+    hold off
+    ylabel(param_label{i},'fontname', 'times','fontsize',14)
+    % ylim([xlimits(i,1:2)])
+     if i == 6
+        xlabel(strcat('Time (window=',num2str(window_size),' Days)'), 'fontname', 'times','fontsize',14)
+     else
+         set(gca,'xticklabel',[])
+     end
+     xlim([1,totalTimeWindows])
+    h = get(gca, 'Position');
+    set(gca, 'Position', [h(1) h(2)+(6-i)*0.01 h(3) h(4)+ 0.01])
+end
 % 
 end

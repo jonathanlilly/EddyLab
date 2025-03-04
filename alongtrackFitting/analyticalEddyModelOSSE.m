@@ -29,7 +29,7 @@ alongtrack.x=x_km*1000;
 alongtrack.y=y_km*1000;
 
 % Now apply the OSSE! Shift time to start from t=0;
-alongtrack.ssh = eddy_model(alongtrack.x,alongtrack.y,alongtrackLatLon.time-alongtrackLatLon.time(1));
+alongtrack.ssh = eddy_model(alongtrack.x,alongtrack.y,alongtrackLatLon.time-min(alongtrackLatLon.time));
 
 alongtrack.t=alongtrackLatLon.time;
 alongtrack.lon=alongtrackLatLon.lon;

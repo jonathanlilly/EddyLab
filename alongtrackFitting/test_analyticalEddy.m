@@ -94,3 +94,6 @@ initialParams.cy = -0.3e3;
 
 params = FitAlongTrackLatLonEddyModel(alongtrackLatLon, eddyFit_fun, initialParams);
 % paramsCell = FitAlongTrackLatLonToEddyModelWindowed(alongtrackLatLon, eddy_model, initialParams, windowLength);
+
+%%
+paramsCell = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initialParams, it_options);

@@ -1,8 +1,8 @@
-function params = FitAlongTrackXYToEddyModel(alongtrack, eddyFit_fun, initialParams, it_options,options)
+function params = FitAlongTrackXYToEddyModel(alongtrack, eddyFit_fun, initParams, it_options,options)
 arguments
     alongtrack struct
     eddyFit_fun function_handle
-    initialParams struct
+    initParams struct
     it_options struct
     % options struct
     options.LB (1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
@@ -15,12 +15,12 @@ use options
 t0 = min(t);
 elapsed_time = t-t0;
 
-p0(1)=initialParams.A;
-p0(2)=initialParams.L;
-p0(3)=initialParams.x0;
-p0(4)=initialParams.y0;
-p0(5)=initialParams.cx;
-p0(6)=initialParams.cy;
+p0(1)=initParams.A;
+p0(2)=initParams.L;
+p0(3)=initParams.x0;
+p0(4)=initParams.y0;
+p0(5)=initParams.cx;
+p0(6)=initParams.cy;
 
 % penalty_function = @(p) sum((ssh - eddyFit_fun(x,y,t,p(1),p(2),p(3),p(4),p(5),p(6))).^2);
 
@@ -51,25 +51,4 @@ params.y0=pmin(4);
 params.cx=pmin(5);
 params.cy=pmin(6);
 params.t0 = t0;  % Store reference time with results
-
-th = 0:pi/50:2*pi;
-
-% True positions
-xo_true = p0(3) + p0(5)*elapsed_time(end);
-yo_true = p0(4) + p0(6)*elapsed_time(end);
-
-% Fit position
-xo_fit = pmin(3) + pmin(5)*elapsed_time(end);
-yo_fit = pmin(4) + pmin(6)*elapsed_time(end);
-
-figure;hold on
-plot(p0(2)*sin(th)+xo_true, p0(2)*cos(th)+yo_true,'r--');
-plot(pmin(2)*sin(th)+xo_fit, pmin(2)*cos(th)+yo_fit,'b');
-plot(xo_true, yo_true,'r*');
-plot(xo_fit, yo_fit,'b*');
-axis equal
-xlim([min(x),max(x)]);ylim([min(y),max(y)])
-box on
-legend('True position', 'Fit position')
-% Calculate error
-position_error = sqrt((xo_fit - xo_true).^2 + (yo_fit - yo_true).^2);
+params.elapsed_time = elapsed_time;
