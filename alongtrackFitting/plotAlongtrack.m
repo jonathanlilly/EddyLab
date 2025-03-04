@@ -19,9 +19,10 @@ end
 
 % Calculate eddy positions at each alongtrack time directly
 % depending on if eddyPath is a function or an array
+elapsed_time = alongtrack.t - min(alongtrack.t);
 if isa(eddyPath.xe, 'function_handle')
-    eddytrack.x = eddyPath.xe(alongtrack.t-alongtrack.t(1));
-    eddytrack.y = eddyPath.ye(alongtrack.t-alongtrack.t(1));
+    eddytrack.x = eddyPath.xe(elapsed_time);
+    eddytrack.y = eddyPath.ye(elapsed_time);
 else
     eddytrack.x = eddyPath.xe;
     eddytrack.y = eddyPath.ye;

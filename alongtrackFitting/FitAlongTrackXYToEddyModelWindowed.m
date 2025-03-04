@@ -1,8 +1,9 @@
-function paramsCell = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initialParams)
+function paramsCell = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initialParams,it_options)
 arguments
     alongtrack struct
     eddyFit_fun function_handle 
     initialParams struct
+    it_options struct
     % options.windowLength (1,1) = 
 end
 %alongtrackLatLon: lat,lon,time
@@ -18,14 +19,21 @@ window_size = max(min_days_per_window, floor(totalDays/(min_total_windows/overla
 time_step=floor(window_size*(1-overlap));
 totalTimeWindows=floor((totalDays - window_size) / time_step) + 1;
 
+% pre-allocate cells for number of windows
+paramsCell = cell(totalTimeWindows, 1);
+
 for i=1:totalTimeWindows
-time_window=1+(i-1)*time_step:(i-1)*time_step+window_size;
+window_indices=1+(i-1)*time_step:(i-1)*time_step+window_size;
 
 % Extract time window
-at_window.x = alongtrack.x(time_window);
-at_window.y = alongtrack.y(time_window);
-at_window.t = alongtrack.t(time_window);
-at_window.ssh = alongtrack.ssh(time_window);
+at_window.x = alongtrack.x(window_indices);
+at_window.y = alongtrack.y(window_indices);
+at_window.t = alongtrack.t(window_indices);
+at_window.ssh = alongtrack.ssh(window_indices);
+
+% Define t0 for this specific window
+t0_window = min(at_window.t);
+elapsed_time_window = at_window.t-t0_window;
 
 % % latc and lonc are the center of the alongtrack domain
 % lonc=(min(at_window.lon(:))+max(at_window.lon(:)))/2;
@@ -37,8 +45,8 @@ at_window.ssh = alongtrack.ssh(time_window);
 % new inital parameters for this window
 initialParams_window.A = initialParams.A;
 initialParams_window.L = initialParams.L;
-initialParams_window.x0 = initialParams.x0+initialParams.cx*time_window(end);
-initialParams_window.y0 = initialParams.y0+initialParams.cy*time_window(end);
+initialParams_window.x0 = initialParams.x0+initialParams.cx*elapsed_time_window;
+initialParams_window.y0 = initialParams.y0+initialParams.cy*elapsed_time_window;
 initialParams_window.cx = initialParams.cx;
 initialParams_window.cy = initialParams.cy;
 
@@ -98,7 +106,7 @@ end
 % end
 
 % if totalTimeWindows>1
-% param_names = {'A','L','x_o','v_x','y_o','v_y'};
+% param_names = {'A','L','x_o','y_o','c_x','c_y'};
 % xlimits = [8,18;50,100;min(center_xoyo(:,1)),max(center_xoyo(:,1));min(vxo),max(vxo);min(center_xoyo(:,2)),max(center_xoyo(:,2));min(vyo),max(vyo)];
 % figure;hold on
 % for i = 1:6

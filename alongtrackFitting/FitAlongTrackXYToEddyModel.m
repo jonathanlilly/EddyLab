@@ -11,6 +11,10 @@ end
 use alongtrack
 use options
 
+% Set reference time t0 and calculate elapsed time
+t0 = min(t);
+elapsed_time = t-t0;
+
 p0(1)=initialParams.A;
 p0(2)=initialParams.L;
 p0(3)=initialParams.x0;
@@ -20,12 +24,12 @@ p0(6)=initialParams.cy;
 
 % penalty_function = @(p) sum((ssh - eddyFit_fun(x,y,t,p(1),p(2),p(3),p(4),p(5),p(6))).^2);
 
-% Change to scaled parameters (A, L, x0,y0,cx,cy)
+% Change to s1caled parameters (A, L, x0,y0,cx,cy)
 scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your parameter scales
 p0_scaled = p0 ./ scale_factors;
 
 % Scaled penalty function
-penalty_function_scaled = @(p_scaled) sum((ssh - eddyFit_fun(x, y, t-min(t), p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
+penalty_function_scaled = @(p_scaled) sum((ssh - eddyFit_fun(x, y, elapsed_time, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
 
 if isfield(options,'LB')
     % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
@@ -46,17 +50,17 @@ params.x0=pmin(3);
 params.y0=pmin(4);
 params.cx=pmin(5);
 params.cy=pmin(6);
+params.t0 = t0;  % Store reference time with results
 
 th = 0:pi/50:2*pi;
-tmat = t-t(1);
 
 % True positions
-xo_true = p0(3) + p0(5)*tmat(end);
-yo_true = p0(4) + p0(6)*tmat(end);
+xo_true = p0(3) + p0(5)*elapsed_time(end);
+yo_true = p0(4) + p0(6)*elapsed_time(end);
 
 % Fit position
-xo_fit = pmin(3) + pmin(5)*tmat(end);
-yo_fit = pmin(4) + pmin(6)*tmat(end);
+xo_fit = pmin(3) + pmin(5)*elapsed_time(end);
+yo_fit = pmin(4) + pmin(6)*elapsed_time(end);
 
 figure;hold on
 plot(p0(2)*sin(th)+xo_true, p0(2)*cos(th)+yo_true,'r--');
