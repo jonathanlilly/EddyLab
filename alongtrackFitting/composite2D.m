@@ -3,6 +3,7 @@ arguments
     alongtrack struct
     eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.showplot (1,1) logical = true %control whether to display plots
 end
 
 use alongtrack
@@ -31,9 +32,12 @@ max_r=round(max(abs(xE))/bin_size)*bin_size;
 % sometimes there's numical precision artifacts,
 % which gives stdz as a very small complex number. Do a correction:
 stdz = abs(stdz);
+
+%% Plots
+if options.showplot %default is showplot=true
 %% mean ssh 2D
 figure;
-h.h1 = jpcolor(xmid/1e3, ymid/1e3, mz*1e2);
+jpcolor(xmid/1e3, ymid/1e3, mz*1e2);
 % r=mean(eddy.speed_radius{1});
 % th = 0:pi/50:2*pi;
 % plot(r * cos(th),r*sin(th))
@@ -56,7 +60,7 @@ xlim([-250, 250]), ylim([-250, 250]);
 
 %% plot 2D temporal std
 figure;
-h.h2 = jpcolor(xmid/1e3, ymid/1e3, stdz*1e2);
+jpcolor(xmid/1e3, ymid/1e3, stdz*1e2);
 % jpcolor(xEbin, yEbin, stdTempD);
 shading flat
 % hold on
@@ -77,7 +81,7 @@ xlim([-250, 250]), ylim([-250, 250]); %clim([0, 8])
 %% 2D track counts histogram
 figure;
 numz(numz == 0) = nan;
-h.h3 = jpcolor(xmid/1e3, ymid/1e3, numz); %
+jpcolor(xmid/1e3, ymid/1e3, numz); %
 clim(round([min(numz(:)), max(numz(:))]))
 shading flat
 axis equal
@@ -92,4 +96,5 @@ c.Label.String = 'Histogram (counts)';
 c.Label.FontSize=16;
 c.Label.FontName='times';
 xlim([-250, 250]), ylim([-250, 250]);
+end
 

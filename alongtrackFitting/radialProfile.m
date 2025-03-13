@@ -3,6 +3,7 @@ arguments
     alongtrack struct
     eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.showplot (1,1) logical = true %control whether to display plots
 end
 
 use alongtrack
@@ -35,10 +36,12 @@ rbin = [-bin_size / 2:bin_size:max_r]';
 stdTotalxy = sqrt(stdAziAvgTemp.^2+avgAziStdTemp.^2);
 stdTotalrt = sqrt(stdTempAvgAzi.^2+avgTempStdAzi.^2);
 
-%plot profile
+%% Plot a profile
+if options.showplot %default is showplot=true
 %2k : linewidth 2, k black.
 %captial A-Z in rainbow order
 %T:blue, U:orange, V:yellow, X:green,W:purple
+
 figure; hold on
 h = plot(rmid/1e3, [mzxy, avgAziStdTemp, stdAziAvgTemp, stdTotalxy, mzrt, avgTempStdAzi, stdTempAvgAzi, stdTotalrt]*1e2);
 linestyle 2k 2T 2U-- 2W 2k-- 2V: 2X-. 2W--
@@ -51,7 +54,9 @@ lg = legend(h, '$\overline{\eta_{xy}}^\theta$', '$\overline{\sigma_\eta}^\theta$
 set(lg, 'interpreter', 'latex', 'fontsize', 16, 'orientation', 'vertical', 'NumColumns', 2)
 set(gca, 'fontsize', 16)
 xlim([0, 250]); %ylim([-2, 30])
+end
 
+%save std values in a struct
 stdz.stdAziAvgTemp = stdAziAvgTemp;
 stdz.avgAziStdTemp = avgAziStdTemp;
 stdz.stdTempAvgAzi = stdTempAvgAzi;
