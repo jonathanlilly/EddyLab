@@ -1,12 +1,3 @@
-main_fig = figure('color','w');
-set(gcf,'Units','centimeters');  %Ensure all dimensions are in cm
-set(gcf,'Position',[0 0 18 16]);  %Size of the figure. The first two numbers indicate the location of the lower left-hand corner.
-                                    %The second two numbers indicate size
-set(gcf,'Renderer','opengl');         %Instead of painter
-
-% Subplot labels (a) through (i)
-labels = {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)', '(i)'};
-
 %% Extract tracks along the defined eddy path
 % define eddy path: xe(t),ye(t) function handles as a function of time
 x0 = 500e3; y0 = 0e3; vx = -2.0e3; vy = -0.5e3;
@@ -31,8 +22,15 @@ current_file_path = matlab.desktop.editor.getActiveFilename;
 current_dir = fileparts(file_dir);
 load(strcat(current_dir,'\alongtrackFitting\alongtrackLatLon.mat'))
 
-plot_data = cell(3, 1);
-%% Test 1 - Gaussian Eddy
+% full field
+fullfield.x = reshape(repmat(x',[1,length(y),totalDays]),[],1);
+fullfield.y = reshape(repmat(y,[length(x),1,totalDays]),[],1);
+fullfield.t = reshape(permute(repmat([1:totalDays]'-1,[1,length(x),length(y)]),[2,3,1]),[],1);
+
+fullfield_data = cell(3, 1);
+OSSE_data = cell(3, 1);
+%% Test data
+% Test 1 - Gaussian Eddy
 clearvars params
 params.A = 0.15; %meter
 params.L = 80e3; %meter
@@ -41,9 +39,14 @@ eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
-plot_data{1} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+OSSE_data{1} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 
-%% Test 2 - Steady Elliptical Eddy:
+fullfield.ssh = eddy_model(fullfield.x,fullfield.y,fullfield.t);
+[mz, xmid, ymid, ~, stdz] = composite2D(fullfield, eddyPath_fun_t,showplot=0);
+[mzxy, rmid, ~, stdz_rt] = radialProfile(fullfield, eddyPath_fun_t,showplot=0);
+fullfield_data{1} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+
+% Test 2 - Steady Elliptical Eddy:
 clearvars params
 params.A = 0.15;
 L = 80e3;
@@ -56,9 +59,14 @@ eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
-plot_data{2} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+OSSE_data{2} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 
-%% Test 3 - Precessing Elliptical Eddy:
+fullfield.ssh = eddy_model(fullfield.x,fullfield.y,fullfield.t);
+[mz, xmid, ymid, ~, stdz] = composite2D(fullfield, eddyPath_fun_t,showplot=0);
+[mzxy, rmid, ~, stdz_rt] = radialProfile(fullfield, eddyPath_fun_t,showplot=0);
+fullfield_data{2} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+
+% Test 3 - Precessing Elliptical Eddy:
 clearvars params
 params.A = 0.15;
 L = 80e3;
@@ -66,15 +74,31 @@ lambda = 0.5;
 La=L/sqrt(lambda);
 params.La = L/sqrt(lambda);%0.4*2*L;
 params.Lb = lambda*params.La;%0.2*2*L;
-params.thetaDot= -2*pi/totalDays; %per day or same as eddy path function time increment (i.e. relative to propation speed)
-
+params.thetaDot= -10*pi/365; %similar to QG model ~5 rotations per year
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
-plot_data{3} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+OSSE_data{3} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 
+fullfield.ssh = eddy_model(fullfield.x,fullfield.y,fullfield.t);
+[mz, xmid, ymid, ~, stdz] = composite2D(fullfield, eddyPath_fun_t,showplot=0);
+[mzxy, rmid, ~, stdz_rt] = radialProfile(fullfield, eddyPath_fun_t,showplot=0);
+fullfield_data{3} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
+%%
+figname='analytical_eddies_full';
+plot_data = fullfield_data;
+% 
+% figname='analytical_eddies_OSSE';
+% plot_data = OSSE_data;
 %% subplots
+main_fig = figure('color','w');
+set(gcf,'Units','centimeters');  %Ensure all dimensions are in cm
+set(gcf,'Position',[0 0 18 16]);  %Size of the figure. The first two numbers indicate the location of the lower left-hand corner.
+                                    %The second two numbers indicate size
+
+% Subplot labels (a) through (i)
+labels = {'(a)', '(b)', '(c)', '(d)', '(e)', '(f)', '(g)', '(h)', '(i)'};
 figure(main_fig); % Make sure we're on the main figure before creating subplots
 clf(main_fig)
 % Create axes for the colorbars at the top
@@ -115,7 +139,7 @@ legend_ax = axes('Position', legend_pos);
 % Create dummy lines with the same formatting as will be used in the plots
 % h_dummy = cell(7,1);
 h = plot(NaN, nan(1,6)*1e2);
-linestyle 2k 2W 2T 2U-- 2V: 2X-.
+linestyle 2k 2W 2T-- 2U-- 2V-. 2X:
 % Create the legend at the top
 legend_top = legend(legend_ax, ...
     '$\overline{\eta_{xy}}^\theta$', '$\Sigma_{\eta_{xy}}$', '$\overline{\sigma_\eta}^\theta$', ...
@@ -204,7 +228,7 @@ for i = 1:3
     use stdz_rt
     % Apply line styles
     h = plot(rmid/1e3, [mzxy,  stdTotalxy, avgAziStdTemp, stdAziAvgTemp, avgTempStdAzi, stdTempAvgAzi]*1e2);
-    linestyle 2k 2W 2T 2U-- 2V: 2X-.
+    linestyle 2k 2W 2T-- 2U-- 2V-. 2X:
     hlines(0, 'k:')
 
     if(i==1||i==2)
@@ -227,9 +251,8 @@ end
 %%
 % Save
 folder_name='D:\UW\AlongTrack-GRL\fig';
-
+set(gcf,'Renderer','painter');         %Instead of painter,opengl
 set(gcf,'inverthardcopy','off') %to save white text as white
 set(1,'paperpositionmode','auto')
-figname='analytical_eddies_avg';
-print('-dpng','-r600',strcat(folder_name,'\',figname,'.png'))
-% print('-deps','-r600',strcat(folder_name,'\',figname,'.eps'))
+print('-dpng','-r1200',strcat(folder_name,'\',figname,'.png'))
+print('-deps','-r1200',strcat(folder_name,'\',figname,'.eps'))
