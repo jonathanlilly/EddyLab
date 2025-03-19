@@ -82,7 +82,7 @@ xlim([-250, 250]), ylim([-250, 250]); %clim([0, 8])
 figure;
 numz(numz == 0) = nan;
 jpcolor(xmid/1e3, ymid/1e3, numz); %
-clim(round([min(numz(:)), max(numz(:))]))
+% clim(round([min(numz(:)), max(numz(:))]))
 shading flat
 axis equal
 xlabel('Distance East (km)', 'FontName', 'times')

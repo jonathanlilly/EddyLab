@@ -2,9 +2,8 @@
 %alongtrackLonLat from OceanDB
 %eddyPath_track from ssh max closed contour centroid
 %eddy_field is an array of eddy field in (x,y,t,ssh)
-
+clear all
 %% 1. Extract tracks along the eddy path
-
 % define domain
 readdir = 'G:\My Drive\AlongTrack\';
 filename = 'BetaEddyOne.nc';

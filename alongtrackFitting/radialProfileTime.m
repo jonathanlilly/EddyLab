@@ -3,6 +3,7 @@ arguments
     alongtrack struct
     eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.showplot (1,1) logical = true %control whether to display plots
 end
 
 use alongtrack
@@ -31,6 +32,9 @@ rbin = [-bin_size / 2:bin_size:max_r]'; %(0:bin_size:max_r)
 %% radial profile vs time
 [mz_rt, rmid, tmid, numz_rt, stdz_rt] = twodstats(sqrt(xE.^2+yE.^2), tmat, ssh, rbin , tbin);
 
+%% Plots
+if options.showplot %default is showplot=true
+%% mean radial profile vs time
 figure;
 hold on; 
 jpcolor(rmid/1e3, [1:length(tmid)], mz_rt*1e2), xlim([0, 250]) %mz_rt'./vmean(mz_rt,2)'
@@ -46,7 +50,7 @@ c.Label.FontName='times';
 set(gca, 'fontname', 'times','FontSize',16)
 % clim([-2.5, 25])
 
-% std profile over time
+%% std profile over time
 figure;
 hold on; 
 jpcolor(rmid/1e3, [1:length(tmid)], stdz_rt*1e2), xlim([0, 250]) %mz_rt'./vmean(mz_rt,2)'
@@ -59,7 +63,7 @@ c.Label.FontSize=16;
 c.Label.FontName='times';
 set(gca, 'fontname', 'times','FontSize',16)
 
-% histogram profile over time
+%% histogram profile over time
 figure;
 hold on; 
 jpcolor(rmid/1e3, [1:length(tmid)], numz_rt), xlim([0, 250]) %mz_rt'./vmean(mz_rt,2)'
@@ -71,3 +75,4 @@ c.Label.String = 'Histogram (count)';
 c.Label.FontSize=16;
 c.Label.FontName='times';
 set(gca, 'fontname', 'times','FontSize',16)
+end

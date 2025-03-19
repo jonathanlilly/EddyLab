@@ -115,7 +115,8 @@ cbar1.FontSize=12;
 cbar1.Position(1)=0.115;
 cbar1.Position(2)=cbar1.Position(2)-0.04;
 cbar1.Position(4)=0.015;
-caxis(cbar1_ax, [-2.5, 15]);
+clim_cbar1=[-2.5, 15];
+caxis(cbar1_ax, clim_cbar1);
 axis(cbar1_ax, 'off');
 title(cbar1_ax, 'Time-averaged SSH (cm)', 'fontsize', 12, 'fontname', 'times');
 
@@ -128,7 +129,8 @@ cbar2.FontSize=12;
 cbar2.Position(1)=0.387;
 cbar2.Position(2)=cbar2.Position(2)-0.04;
 cbar2.Position(4)=0.015;
-caxis(cbar2_ax, [0, 1.5]);
+clim_cbar2=[0, 2];
+caxis(cbar2_ax, clim_cbar2);
 axis(cbar2_ax, 'off');
 title(cbar2_ax, 'Temporal variance (cm)', 'fontsize', 12, 'fontname', 'times');
 
@@ -190,7 +192,7 @@ for i = 1:3
     set(gca, 'fontname', 'times', 'fontsize', 12);
     colormap(brewermap([], '-Spectral'));
     % colorbar('EastOutside');
-    clim([-2.5,15])
+    clim(clim_cbar1)
     xlim([-250, 250]);
     ylim([-250, 250]);
     text(-230, 210, labels{3*(i-1)+1}, 'fontsize', 14, 'fontname', 'times','color','w');
@@ -213,7 +215,7 @@ for i = 1:3
     set(gca, 'fontname', 'times', 'fontsize', 12);
     colormap(brewermap([], '-Spectral'));
     % colorbar('EastOutside');
-    clim([0,1.5])
+    clim(clim_cbar2)
     xlim([-250, 250]);
     ylim([-250, 250]);
     text(-230, 210, labels{3*(i-1)+2}, 'fontsize', 14, 'fontname', 'times','color','w');
@@ -255,4 +257,4 @@ set(gcf,'Renderer','painter');         %Instead of painter,opengl
 set(gcf,'inverthardcopy','off') %to save white text as white
 set(1,'paperpositionmode','auto')
 print('-dpng','-r1200',strcat(folder_name,'\',figname,'.png'))
-print('-deps','-r1200',strcat(folder_name,'\',figname,'.eps'))
+print('-depsc','-r1200',strcat(folder_name,'\',figname,'.eps'))

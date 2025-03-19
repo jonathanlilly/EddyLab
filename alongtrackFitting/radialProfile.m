@@ -43,14 +43,16 @@ if options.showplot %default is showplot=true
 %T:blue, U:orange, V:yellow, X:green,W:purple
 
 figure; hold on
-h = plot(rmid/1e3, [mzxy, avgAziStdTemp, stdAziAvgTemp, stdTotalxy, mzrt, avgTempStdAzi, stdTempAvgAzi, stdTotalrt]*1e2);
-linestyle 2k 2T 2U-- 2W 2k-- 2V: 2X-. 2W--
+h = plot(rmid/1e3, [mzxy, stdTotalxy, avgAziStdTemp, stdAziAvgTemp, avgTempStdAzi, stdTempAvgAzi]*1e2);
+linestyle 2k 2W 2T-- 2U-- 2V-. 2X:
 hlines(0, 'k:')
 
 xlabel('Radial distance (km)', 'FontName', 'times')
 ylabel('SSH Variance (cm)', 'FontName', 'times')
 set(gca, 'fontname', 'times')
-lg = legend(h, '$\overline{\eta_{xy}}^\theta$', '$\overline{\sigma_\eta}^\theta$', '$\varsigma_{\overline{\eta}^t}$', '$\Sigma_{\eta_{xy}}$', '$\overline{\eta_{rt}}^\theta$', '$\overline{\varsigma_\eta}^t$', '$\sigma_{\overline{\eta}^\theta}$', '$\Sigma_{\eta_{rt}}$');
+lg = legend(h,'$\overline{\eta_{xy}}^\theta$', '$\Sigma_{\eta_{xy}}$', '$\overline{\sigma_\eta}^\theta$', ...
+    '$\varsigma_{\overline{\eta}^t}$', ...
+    '$\overline{\varsigma_\eta}^t$', '$\sigma_{\overline{\eta}^\theta}$');
 set(lg, 'interpreter', 'latex', 'fontsize', 16, 'orientation', 'vertical', 'NumColumns', 2)
 set(gca, 'fontsize', 16)
 xlim([0, 250]); %ylim([-2, 30])
