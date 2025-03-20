@@ -73,7 +73,7 @@ end
 obs.t = reshape(timet(:,:,a:b),[],1);
 %extract time window
 obs.t(obs.t < timeo(1) | obs.t > timeo(end)) = NaN;
-alongtrackLatLon.time = obs.t(~isnan(obs.t(:)));
+alongtrackLatLon.t = obs.t(~isnan(obs.t(:)));
 alongtrackLatLon.lon = obs.lon(~isnan(obs.t(:)));
 alongtrackLatLon.lat = obs.lat(~isnan(obs.t(:)));
 

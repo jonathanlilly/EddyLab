@@ -36,10 +36,6 @@ lato=(min(alongtrack.lat(:))+max(alongtrack.lat(:)))/2;
 [eddytrack.latitude, eddytrack.longitude] = xy2latlon(eddytrack.x/1e3,eddytrack.y/1e3,lato,lono);
 eddytrack.longitude = deg180(eddytrack.longitude-lono) + lono; %avoids unwrapping issues
 
-%eddytrack
-lono_eddy=eddytrack.longitude;
-lato_eddy=eddytrack.latitude;
-
 figure;hold on
 h(1)=plot(eddytrack.longitude,eddytrack.latitude,'LineWidth',3,'Color',0*[1 1 1]);
 plot(eddytrack.longitude(1),eddytrack.latitude(1),'ko','markersize',8,'markerfacecolor','k')
@@ -71,7 +67,7 @@ figure, hold on;
 cmap = brewermap(256, '-Spectral');
 
 % Create scatter plot directly using SSH values for colors
-s = scatter3(alongtrack.x/1e3, alongtrack.y/1e3, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
+s = scatter3(alongtrack.lon/1e3, alongtrack.lat/1e3, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
     'markerEdgeColor', 'none');
 
 set(gca, 'fontname', 'times','fontsize',14)
@@ -85,9 +81,9 @@ caxis([min(alongtrack.ssh(:)*1e2), max(alongtrack.ssh(:)*1e2)])
 xlabel('$x$ (km)', 'FontName', 'times','Interpreter','latex')
 ylabel('$y$ (km)', 'FontName', 'times','Interpreter','latex')
 zlabel('SSH (cm)', 'FontName', 'times','Interpreter','latex')
-daspect([1,1,0.02])
+% daspect([1,1,0.02])
 grid on
-xlim([min(alongtrack.x/1e3),max(alongtrack.x/1e3)]);ylim([min(alongtrack.y/1e3),max(alongtrack.y/1e3)])
+xlim([min(alongtrack.lon/1e3),max(alongtrack.lon/1e3)]);ylim([min(alongtrack.lat/1e3),max(alongtrack.lat/1e3)])
 view(-30,35)
 
 %% 2D composite

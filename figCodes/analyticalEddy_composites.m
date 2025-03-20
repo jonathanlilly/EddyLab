@@ -22,6 +22,10 @@ current_file_path = matlab.desktop.editor.getActiveFilename;
 current_dir = fileparts(file_dir);
 load(strcat(current_dir,'\alongtrackFitting\alongtrackLatLon.mat'))
 
+% convert lat,lon to x,y to generate an eddy
+alongtrackXY = latlon2xy_centered(alongtrackLatLon);
+alongtrack = alongtrackXY; %pass on the ground track lat,lon,t arrays
+
 % full field
 fullfield.x = reshape(repmat(x',[1,length(y),totalDays]),[],1);
 fullfield.y = reshape(repmat(y,[length(x),1,totalDays]),[],1);
@@ -36,7 +40,7 @@ params.A = 0.15; %meter
 params.L = 80e3; %meter
 
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
-alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
+alongtrack.ssh = eddy_model(alongtrackXY.x,alongtrackXY.y,alongtrackXY.t-min(alongtrackXY.t));
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
 OSSE_data{1} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
@@ -56,7 +60,7 @@ params.La = L/sqrt(lambda);%0.4*2*L;
 params.Lb = lambda*params.La;%0.2*2*L;
 
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
-alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
+alongtrack.ssh = eddy_model(alongtrackXY.x,alongtrackXY.y,alongtrackXY.t-min(alongtrackXY.t));
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
 OSSE_data{2} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
@@ -74,9 +78,9 @@ lambda = 0.5;
 La=L/sqrt(lambda);
 params.La = L/sqrt(lambda);%0.4*2*L;
 params.Lb = lambda*params.La;%0.2*2*L;
-params.thetaDot= -10*pi/365; %similar to QG model ~5 rotations per year
+params.thetaDot= -5*pi/365;%-10*pi/365; %similar to QG model ~5 rotations per year
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
-alongtrack = analyticalEddyModelOSSE(alongtrackLatLon,eddy_model);
+alongtrack.ssh = eddy_model(alongtrackXY.x,alongtrackXY.y,alongtrackXY.t-min(alongtrackXY.t));
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
 OSSE_data{3} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
@@ -86,11 +90,11 @@ fullfield.ssh = eddy_model(fullfield.x,fullfield.y,fullfield.t);
 [mzxy, rmid, ~, stdz_rt] = radialProfile(fullfield, eddyPath_fun_t,showplot=0);
 fullfield_data{3} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 %%
-figname='analytical_eddies_full';
-plot_data = fullfield_data;
+% figname='analytical_eddies_full';
+% plot_data = fullfield_data;
 % 
-% figname='analytical_eddies_OSSE';
-% plot_data = OSSE_data;
+figname='analytical_eddies_OSSE';
+plot_data = OSSE_data;
 %% subplots
 main_fig = figure('color','w');
 set(gcf,'Units','centimeters');  %Ensure all dimensions are in cm
@@ -129,7 +133,8 @@ cbar2.FontSize=12;
 cbar2.Position(1)=0.387;
 cbar2.Position(2)=cbar2.Position(2)-0.04;
 cbar2.Position(4)=0.015;
-clim_cbar2=[0, 2];
+% clim setting the min as max(std_rt_test 1) and max as max(std_rt_test 3) 
+clim_cbar2 = round([max([max(OSSE_data{1}{4},[],'all'),max(fullfield_data{1}{4},[],'all')]), max([max(OSSE_data{3}{4},[],'all'),max(fullfield_data{3}{4},[],'all')])]*1e2,1);
 caxis(cbar2_ax, clim_cbar2);
 axis(cbar2_ax, 'off');
 title(cbar2_ax, 'Temporal variance (cm)', 'fontsize', 12, 'fontname', 'times');

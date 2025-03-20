@@ -11,6 +11,8 @@ end
 use alongtrack
 use options
 
+% Add model choice section based on satellites
+
 % Set reference time t0 and calculate elapsed time
 t0 = min(t);
 elapsed_time = t-t0;
