@@ -78,7 +78,7 @@ lambda = 0.5;
 La=L/sqrt(lambda);
 params.La = L/sqrt(lambda);%0.4*2*L;
 params.Lb = lambda*params.La;%0.2*2*L;
-params.thetaDot= -5*pi/365;%-10*pi/365; %similar to QG model ~5 rotations per year
+params.thetaDot= -6*pi/365;%-10*pi/365; %similar to QG model ~5 rotations per year
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack.ssh = eddy_model(alongtrackXY.x,alongtrackXY.y,alongtrackXY.t-min(alongtrackXY.t));
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
