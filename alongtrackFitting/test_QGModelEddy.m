@@ -10,7 +10,7 @@ filename = 'BetaEddyOne.nc';
 % Load Model
 x_QG = ncread([readdir, filename], 'x'); %meters
 y_QG = ncread([readdir, filename], 'y'); %meters
-ssh = squeeze(ncread([readdir, filename], 'ssh')) * 100; %cm;% matrix order in x,y,z
+ssh = squeeze(ncread([readdir, filename], 'ssh')); %meter;% matrix order in x,y,z
 
 totalDays = size(ssh, 3);
 x = x_QG - mean(x_QG);
@@ -31,16 +31,19 @@ eddyPath_fun_t.xe = @(t) interp1(eddy_field.t, eddyPath.xe, t, 'linear', 'extrap
 eddyPath_fun_t.ye = @(t) interp1(eddy_field.t, eddyPath.ye, t, 'linear', 'extrap');
 
 % extract track - takes somes time bc it loads the entire track matrix
-alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays); %options: lato=24, lono=305
+my_readdir = 'G:\My Drive\AlongTrack\';
+alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,lono=-40,readdir=my_readdir); %options: lato=24, lono=305
+alongtrackXY = latlon2xy_centered(alongtrackLatLon);
 
 %% 2. Apply OSSE on your choice of an analytical eddy shape
 %Output: alongtrack - contains arrays of lon,lat,x,y,t,ssh of OSSE 
 % apply OSSE on an eddy_field from QG model in (x,y,t)
-alongtrack = subsampleOSSE(alongtrackLatLon,eddy_field);
+alongtrack = subsampleOSSE(alongtrackXY,eddy_field);
 
 %% 3. Plots and Videos of OSSE
 %% plot eddy path with alongtrack, and OSSE
-plotAlongtrack(alongtrack,eddyPath);
+alongtrackLatLon.ssh=alongtrack.ssh; %plotAlongtrack takes in lat lon info
+plotAlongtrack(alongtrackLatLon,eddyPath);
 
 %% make video of the propagating eddy
 video_name = 'eddy_field_QGmodel';

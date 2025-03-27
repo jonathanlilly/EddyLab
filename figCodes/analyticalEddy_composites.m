@@ -78,7 +78,7 @@ lambda = 0.5;
 La=L/sqrt(lambda);
 params.La = L/sqrt(lambda);%0.4*2*L;
 params.Lb = lambda*params.La;%0.2*2*L;
-params.thetaDot= -6*pi/365;%-10*pi/365; %similar to QG model ~5 rotations per year
+params.thetaDot= -5*pi/365;%-10*pi/365; %similar to QG model ~5 rotations per year
 eddy_model = analyticalEddyModel(eddyPath_fun_t,params);
 alongtrack.ssh = eddy_model(alongtrackXY.x,alongtrackXY.y,alongtrackXY.t-min(alongtrackXY.t));
 [mz, xmid, ymid, ~, stdz] = composite2D(alongtrack, eddyPath_fun_t,showplot=0);
@@ -134,7 +134,7 @@ cbar2.Position(1)=0.387;
 cbar2.Position(2)=cbar2.Position(2)-0.04;
 cbar2.Position(4)=0.015;
 % clim setting the min as max(std_rt_test 1) and max as max(std_rt_test 3) 
-clim_cbar2 = round([max([max(OSSE_data{1}{4},[],'all'),max(fullfield_data{1}{4},[],'all')]), max([max(OSSE_data{3}{4},[],'all'),max(fullfield_data{3}{4},[],'all')])]*1e2,1);
+clim_cbar2 = round([max([max(OSSE_data{2}{4},[],'all'),max(fullfield_data{2}{4},[],'all')]), max([max(OSSE_data{3}{4},[],'all'),max(fullfield_data{3}{4},[],'all')])]*1e2,1);
 caxis(cbar2_ax, clim_cbar2);
 axis(cbar2_ax, 'off');
 title(cbar2_ax, 'Temporal variance (cm)', 'fontsize', 12, 'fontname', 'times');
@@ -257,9 +257,11 @@ end
 
 %%
 % Save
-folder_name='D:\UW\AlongTrack-GRL\fig';
-set(gcf,'Renderer','painter');         %Instead of painter,opengl
+folder_name='E:\Research\AlongTrack-GRL\fig';%'D:\UW\AlongTrack-GRL\fig';
+set(gcf,'Renderer','opengl');         % somehow painters or completely vectorize creates white lines
+set(gca, 'Color', 'w'); % Sets axis background to white
 set(gcf,'inverthardcopy','off') %to save white text as white
 set(1,'paperpositionmode','auto')
-print('-dpng','-r1200',strcat(folder_name,'\',figname,'.png'))
+% print('-dpng','-r1200',strcat(folder_name,'\',figname,'.png'))
 print('-depsc','-r1200',strcat(folder_name,'\',figname,'.eps'))
+% exportgraphics(gcf, fullfile(folder_name, strcat(figname, '.eps')), 'ContentType', 'vector');
