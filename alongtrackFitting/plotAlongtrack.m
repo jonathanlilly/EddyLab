@@ -56,8 +56,8 @@ latratio(30)
 %for optional legend
 if true %set to false is no legend is desired
     clear str
-    str{1}=['Eddy-tracking'];
-    str{2}=['along-track'];
+    str{1}=['Eddy path'];
+    str{2}=['Along-track'];
     % str{3}=['continent'];
     legend(h,str,'location','northeast','interpreter','tex')
 end
