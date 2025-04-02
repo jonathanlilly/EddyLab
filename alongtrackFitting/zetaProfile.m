@@ -4,23 +4,11 @@ arguments
     eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
     options.lato (1,1) {mustBeNumeric} = 24
-    options.epsilon = 1e-2/(1e4).^2*g/fo %Tolerance for shield zero-crossing, in case shield plateaus for zero-crossing zeta value. dSSH ~ 1e-2 m, dx ~ 1e4 m -> dSSH/dx*2=1e-11
+    options.epsilon (1,1) {mustBeNumeric} = 0.01 %1e-2/(1e4).^2*g/fo %Tolerance for shield zero-crossing, in case shield plateaus for zero-crossing zeta value.  %dSSH ~ 1e-4 m, QGmodel resolution: dx ~ 4e3 m, dzeta:dSSH/dx*2*g/f/f
 end
-
-%ensure x,y,t are arrays without repeat
-fullfield.x=unique(fullfield.x);
-fullfield.y=unique(fullfield.x);
-fullfield.t=unique(fullfield.t);
 
 use fullfield
 use options
-
-% Calculate grid spacing
-dx = x(2) - x(1);
-dy = y(2) - y(1);
-
-% calculate zeta in (x,y,t) matrix
-[zeta] = zetaField(dx,dy,ssh,lato=lato);
 
 % Calculate eddy positions at each alongtrack time directly
 % depending on if eddyPath is a function or an array
@@ -43,8 +31,8 @@ tbin = [min(t, [], "all") - .5:1:max(t, [], "all") + 0.5]'; %tbin for radialStat
 rbin = [-bin_size / 2:bin_size:max_r]';
 
 %% Compute statistics
-tmat = permute(repmat(t',[1,length(x),length(y)]),[2,3,1]);
-[mz_zeta, rmid, ~, ~, ~] = radialStatisticsFromScatter(xE, yE, tmat, zeta, rbin, tbin, firstAverage = 'temporal');
+% tmat = permute(repmat(t',[1,length(x),length(y)]),[2,3,1]);
+[mz_zeta, rmid, ~, ~, ~] = radialStatisticsFromScatter(xE, yE, t, zeta, rbin, tbin, firstAverage = 'temporal');
 
 %plot profile
 %2k : linewidth 2, k black.
@@ -61,7 +49,6 @@ set(gca, 'fontsize', 16)
 xlim([0, 250]); %ylim([-2, 30])
 
 %% core and shield radius
-epsilon=1e-4/(4e3).^2*g/fo/fo; %dSSH ~ 1e-4 m, QGmodel resolution: dx ~ 4e3 m, dzeta:dSSH/dx*2*g/f/f
 [r_core,r_shield]=zeroZetaCrossing(mz_zeta,rmid,epsilon=epsilon);
 vlines(r_core/1e3, 'k:')
 vlines(r_shield/1e3, 'k:')

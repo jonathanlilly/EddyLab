@@ -32,7 +32,7 @@ for i = 1:6
     ylabel(param_label{i},'fontname', 'times','fontsize',14)
     if i~=3 && i~=4
     %skip x0 and y0
-    ylim([xlimits(i,1:2)]./scale_factors(i))
+    % ylim([xlimits(i,1:2)]./scale_factors(i))
     end
      if i == 6
         xlabel(strcat('Time (window=',num2str(window_size),' Days)'), 'fontname', 'times','fontsize',14)

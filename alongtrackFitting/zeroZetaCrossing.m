@@ -2,8 +2,9 @@ function [r_core,r_shield]=zeroZetaCrossing(mz_zeta,rmid,options)
 arguments
     mz_zeta (:,:) {mustBeNumeric}
     rmid (:,:) {mustBeNumeric}
-    options.epsilon = 1e-4/(4e3).^2*g/fo/fo %Tolerance for shield zero-crossing, in case shield plateaus for zero-crossing zeta value. dSSH ~ 1e-2 m, dx ~ 1e4 m -> dSSH/dx*2=1e-11
+    options.epsilon (1,1) {mustBeNumeric} = 0.01 %1e-4/(4e3).^2*g/fo/fo %Tolerance for shield zero-crossing, in case shield plateaus for zero-crossing zeta value. dSSH ~ 1e-2 m, dx ~ 1e4 m -> dSSH/dx*2=1e-11
 end
+
 %% zero-crossing
 % For first crossing (negative to positive with possible near-zero values)
 

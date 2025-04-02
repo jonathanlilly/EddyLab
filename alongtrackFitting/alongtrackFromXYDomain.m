@@ -1,4 +1,4 @@
-function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,options)
+function alongtrackLatLon = alongtrackFromXYDomain(x,y,timeo,options)
 % alongtrackFromXYDomain Extracts along-track satellite data for a given domain
 %
 % This function extracts along-track satellite altimetry data within a specified
@@ -19,7 +19,7 @@ function alongtrackLatLon = alongtrackFromXYDomain(x,y,totalDays,options)
 arguments
     x (1,:) {mustBeNumeric}
     y (1,:) {mustBeNumeric}
-    totalDays (1,1) {mustBeNumeric, mustBePositive}
+    timeo (1,1) {mustBeNumeric, mustBePositive}
     options.lono (1,1) {mustBeNumeric} = 308
     options.lato (1,1) {mustBeNumeric} = 24
     options.readdir string = 'G:\My Drive\AlongTrack\'
@@ -57,8 +57,6 @@ region = [min(long(:)), max(long(:)), min(latg(:)), max(latg(:))];
 lont = deg180(lont-lono) + lono; %avoids unwrapping issues
 
 %define a start date for the simulation
-%timeo=datenum(1992,9,25)+(0:totalDays-1)';
-timeo = datenum(2000, 1, 1) + (0:totalDays - 1)' + 90; %Initial time is also a free parameter
 a = find(squeeze(min(timet, [], [1, 2])) > timeo(1), 1, 'first');
 b = find(squeeze(max(timet, [], [1, 2])) < timeo(end), 1, 'last');
 

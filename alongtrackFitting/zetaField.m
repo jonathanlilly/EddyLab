@@ -5,7 +5,7 @@ arguments
     ssh (:,:,:) {mustBeNumeric}
     options.lato (1,1) {mustBeNumeric} = 24
 end
-
+% non-dimensionalized relative vorticity: zeta/f in x-y field 
 use options
 
 fo = abs(corfreq(lato))/3600; %rad/s

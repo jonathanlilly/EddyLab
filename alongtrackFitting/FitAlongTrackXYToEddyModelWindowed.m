@@ -24,8 +24,6 @@ totalTimeWindows=floor((totalDays - window_size) / time_step) + 1;
 [alongtrack.t,sort_idx]=sort(alongtrack.t,'ascend');
 alongtrack.x=alongtrack.x(sort_idx);
 alongtrack.y=alongtrack.y(sort_idx);
-alongtrack.lon=alongtrack.lon(sort_idx);
-alongtrack.lat=alongtrack.lat(sort_idx);
 alongtrack.ssh=alongtrack.ssh(sort_idx);
 
 % pre-allocate cells for number of windows
