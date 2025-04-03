@@ -9,7 +9,7 @@ Avg_all = cumAvg_track(end,:);
 % is the time-averaged radial profile
 % Relative Convergence Error of Time-Azimuthal Average $m_z(r,t)$
 %$\overline{h}^{\theta}(r,t)-\overline{h}(r)$ (\%)
-convergence = abs(cumAvg_track-Avg_all)/abs(Avg_all);
+convergence = rms(abs(cumAvg_track-Avg_all)./abs(Avg_all),2,'omitmissing');
 
 % cumAvg_all = cumsum(mz_all.*numz_all, 'omitnan') ./ cumsum(numz_all);
 % dmz = rms((cumAvg_track - cumAvg_all)./repmat(cumAvg_all(end, :), [size(cumAvg_all, 1), 1]), 2, 'omitmissing');

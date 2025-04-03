@@ -20,21 +20,30 @@ end
 % Calculate eddy positions at each alongtrack time directly
 % depending on if eddyPath is a function or an array
 elapsed_time = alongtrack.t - min(alongtrack.t);
-if isa(eddyPath.xe, 'function_handle')
-    eddytrack.x = eddyPath.xe(elapsed_time);
-    eddytrack.y = eddyPath.ye(elapsed_time);
+if isfield(eddyPath,'lat')
+    if isa(eddyPath.lat, 'function_handle')
+        eddytrack.longitude=eddyPath.lon(elapsed_time);
+        eddytrack.latitude=eddyPath.lat(elapsed_time);
+    else
+        eddytrack.longitude=eddyPath.lon;
+        eddytrack.latitude=eddyPath.lat;
+    end
 else
-    eddytrack.x = eddyPath.xe;
-    eddytrack.y = eddyPath.ye;
+    if isa(eddyPath.xe, 'function_handle')
+        eddytrack.x = eddyPath.xe(elapsed_time);
+        eddytrack.y = eddyPath.ye(elapsed_time);
+    else
+        eddytrack.x = eddyPath.xe;
+        eddytrack.y = eddyPath.ye;
+    end
+    % lato and lono are the center of the alongtrack domain
+    lono=(min(alongtrack.lon(:))+max(alongtrack.lon(:)))/2;
+    lato=(min(alongtrack.lat(:))+max(alongtrack.lat(:)))/2;
+    
+    [eddytrack.latitude, eddytrack.longitude] = xy2latlon(eddytrack.x/1e3,eddytrack.y/1e3,lato,lono);
+    eddytrack.longitude = deg180(eddytrack.longitude-lono) + lono; %avoids unwrapping issues
 end
 
-
-% lato and lono are the center of the alongtrack domain
-lono=(min(alongtrack.lon(:))+max(alongtrack.lon(:)))/2;
-lato=(min(alongtrack.lat(:))+max(alongtrack.lat(:)))/2;
-
-[eddytrack.latitude, eddytrack.longitude] = xy2latlon(eddytrack.x/1e3,eddytrack.y/1e3,lato,lono);
-eddytrack.longitude = deg180(eddytrack.longitude-lono) + lono; %avoids unwrapping issues
 
 figure;hold on
 h(1)=plot(eddytrack.longitude,eddytrack.latitude,'LineWidth',3,'Color',0*[1 1 1]);
@@ -67,7 +76,7 @@ figure, hold on;
 cmap = brewermap(256, '-Spectral');
 
 % Create scatter plot directly using SSH values for colors
-s = scatter3(alongtrack.lon/1e3, alongtrack.lat/1e3, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
+s = scatter3(alongtrack.lon, alongtrack.lat, alongtrack.ssh*1e2, 7, alongtrack.ssh*1e2, 'filled', ...
     'markerEdgeColor', 'none');
 
 set(gca, 'fontname', 'times','fontsize',14)
@@ -81,9 +90,9 @@ caxis([min(alongtrack.ssh(:)*1e2), max(alongtrack.ssh(:)*1e2)])
 xlabel('$x$ (km)', 'FontName', 'times','Interpreter','latex')
 ylabel('$y$ (km)', 'FontName', 'times','Interpreter','latex')
 zlabel('SSH (cm)', 'FontName', 'times','Interpreter','latex')
-% daspect([1,1,0.02])
+% daspect([1,1,1.5])
 grid on
-xlim([min(alongtrack.lon/1e3),max(alongtrack.lon/1e3)]);ylim([min(alongtrack.lat/1e3),max(alongtrack.lat/1e3)])
+xlim([min(alongtrack.lon),max(alongtrack.lon)]);ylim([min(alongtrack.lat),max(alongtrack.lat)])
 view(-30,35)
 
 %% 2D composite

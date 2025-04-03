@@ -1,4 +1,4 @@
-function makePropagatingVideo(x,y,totalDays,eddy_model,video_name)
+function makePropagatingVideo(x,y,time,eddy_model,video_name)
 % makePropagatingVideo Creates a video of a propagating eddy field
 %
 % Inputs:
@@ -11,7 +11,7 @@ function makePropagatingVideo(x,y,totalDays,eddy_model,video_name)
 arguments
     x (1,:) {mustBeNumeric}
     y (1,:) {mustBeNumeric}
-    totalDays (1,1) {mustBeNumeric, mustBePositive}
+    time (:,:) {mustBeNumeric, mustBePositive}
     eddy_model function_handle
     video_name (1,1) string = "eddy_field"
 end
@@ -26,8 +26,8 @@ v.FrameRate = 30;
 open(v);
 
 % figure loop
-for n = 1:totalDays
-ssh = eddy_model(xMat',yMat',n);
+for n = 1:length(time)
+ssh = eddy_model(xMat',yMat',time(n)-min(time));
 jpcolor(x/1e3,y/1e3,ssh*1e2), shading flat
 set(gca, 'fontname', 'times','fontsize',16)
 colormap(brewermap([], '-Spectral'))

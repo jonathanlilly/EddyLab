@@ -19,7 +19,8 @@ end
 % Calculate eddy-relative coordinates directly
 xE = x - xo;
 yE = y - yo;
-figure;hold on
+figure;
+hold on
 jpcolor(xE/1e3, yE/1e3, zeta');
 if isfield(options,'contour') %core
     plot((options.contour.core(1,:)-xo)/1e3,(options.contour.core(2,:)-yo)/1e3,'k','LineWidth',1)
