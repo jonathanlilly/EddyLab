@@ -1,4 +1,4 @@
-function alongtrackLatLon = alongtrackFromXYDomain(x,y,timeo,options)
+function alongtrackLatLon = alongtrackFromXYDomain(JasonAlongTrack,x,y,timeo,options)
 % alongtrackFromXYDomain Extracts along-track satellite data for a given domain
 %
 % This function extracts along-track satellite altimetry data within a specified
@@ -17,25 +17,15 @@ function alongtrackLatLon = alongtrackFromXYDomain(x,y,timeo,options)
 %                     time, lon, lat
 %
 arguments
+    JasonAlongTrack struct
     x (1,:) {mustBeNumeric}
     y (1,:) {mustBeNumeric}
     timeo (:,:) {mustBeNumeric, mustBePositive}
     options.lono (1,1) {mustBeNumeric} = 308
     options.lato (1,1) {mustBeNumeric} = 24
-    options.readdir string = 'G:\My Drive\AlongTrack\'
     options.getSSH logical = 'false'
 end
 use options
-%% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
-JasonAlongTrack.filename = strcat(readdir, 'JasonAlongTrack.nc');
-JasonAlongTrack.lat = ncread(JasonAlongTrack.filename, 'lat');
-JasonAlongTrack.lon = ncread(JasonAlongTrack.filename, 'lon');
-%JML convert time to Matlab's datenum format
-JasonAlongTrack.time = ncread(JasonAlongTrack.filename, 'time') + datenum(1950, 1, 1);
-%Time is defined as beginning at 4:05 AM on Sept 23, 1992,
-if getSSH
-JasonAlongTrack.ssh = ncread(JasonAlongTrack.filename, 'sla');
-end
 % if isempty(varargin)
 % lato = 24;
 % tn_0 = 84; %track number

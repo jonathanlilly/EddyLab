@@ -1,27 +1,30 @@
-function alongtrackLatLon = extractAlongtrackLatLonEddyCenter(eddyPath,timeo,options)
+function alongtrackLatLon = extractAlongtrackLatLonEddyCenter(JasonAlongTrack,eddyPath,timeo,options)
 arguments
+    JasonAlongTrack struct
     eddyPath struct
     timeo (:,:) {mustBeNumeric, mustBePositive}
-    options.readdir string = 'G:\My Drive\AlongTrack\'
+    options.radius (1,1) {mustBeNumeric} = 300
 end
 use options
-%% Alongtrack from Jonathan (3D matrix [atd, tracknumber, cycle])
-JasonAlongTrack.filename = strcat(readdir, 'JasonAlongTrack.nc');
-JasonAlongTrack.lat = ncread(JasonAlongTrack.filename, 'lat');
-JasonAlongTrack.lon = ncread(JasonAlongTrack.filename, 'lon');
-%JML convert time to Matlab's datenum format
-JasonAlongTrack.time = ncread(JasonAlongTrack.filename, 'time') + datenum(1950, 1, 1);
-%Time is defined as beginning at 4:05 AM on Sept 23, 1992,
-JasonAlongTrack.ssh = ncread(JasonAlongTrack.filename, 'sla');
+
+%%
+latc=(max(eddyPath.lat)+min(eddyPath.lat))/2;
+lonc=(max(eddyPath.lon)+min(eddyPath.lon))/2;
+[lat_rad,lon_rad]=xy2latlon(radius,radius,latc,lonc);
+lat_rad=lat_rad-latc;
+lon_rad=lon_rad-lonc;
 
 alongtrackLatLon.t = [];
 alongtrackLatLon.lon = [];
 alongtrackLatLon.lat = [];
 alongtrackLatLon.ssh = [];
 for n=1:length(timeo)
-    latg=eddyPath.lat(n)-0.75:0.25:eddyPath.lat(n)+0.75;
-    long=eddyPath.lon(n)-0.75:0.25:eddyPath.lon(n)+0.75;
-    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),readdir=readdir,getSSH='true');
+    latg=eddyPath.lat(n)-round(lat_rad):0.25:eddyPath.lat(n)+round(lat_rad);
+    long=eddyPath.lon(n)-round(lon_rad):0.25:eddyPath.lon(n)+round(lon_rad);
+    %create a region enclosing minima and maxima lon and lat
+    region = [min(long(:)), max(long(:)), min(latg(:)), max(latg(:))];
+
+    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),getSSH='true');
     
     % Concatenate results
 
