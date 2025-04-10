@@ -23,7 +23,7 @@ arguments
     timeo (:,:) {mustBeNumeric, mustBePositive}
     options.lono (1,1) {mustBeNumeric} = 308
     options.lato (1,1) {mustBeNumeric} = 24
-    options.getSSH logical = 'false'
+    options.getSSH (1,1) logical = false
 end
 use options
 % if isempty(varargin)
@@ -44,4 +44,4 @@ yc = y - mean(y);
 %create a region enclosing minima and maxima lon and lat
 region = [min(long(:)), max(long(:)), min(latg(:)), max(latg(:))];
 
-alongtrackLatLon = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo,options);
+alongtrackLatLon = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo,lono=lono,lato=lato,getSSH=getSSH);
