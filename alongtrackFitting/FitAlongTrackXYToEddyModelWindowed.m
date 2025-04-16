@@ -5,6 +5,7 @@ arguments
     initParams struct
     eddyPath_fun_t struct
     it_options struct
+    options.window (1,1) {mustBeNumeric}
     options.LB (1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
     options.UB (1,6) double %= [30, 150, 1000e3, 500e3, 0, 0]
 end
@@ -15,7 +16,12 @@ totalDays = max(alongtrack.t)-min(alongtrack.t);
 min_days_per_window = 45;  % Need at least 4.5 cycles for the eddy core coverage
 min_total_windows = 3;      % Need at least 3 windows to see evolution
 overlap = 0.5; %50% overlap between time_window
+
+if isfield(options,'window')
+    window_size=options.window;
+else
 window_size = max(min_days_per_window, floor(totalDays/(min_total_windows/overlap)));
+end
 
 time_step=floor(window_size*(1-overlap));
 totalTimeWindows=floor((totalDays - window_size) / time_step) + 1;
