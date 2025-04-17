@@ -1,4 +1,4 @@
-function min_MSE = compute_min_MSE(alongtrack, eddyPath, fullfield, window_size_array, model, options)
+function [mse,min_MSE] = compute_min_MSE(alongtrack, eddyPath, fullfield, window_size_array, model, options)
 arguments
     alongtrack struct
     eddyPath struct
@@ -6,6 +6,7 @@ arguments
     window_size_array (:,1) {mustBeNumeric}
     model string
     options.bin_size = 12.5 * 1e3; % in meters
+    options.max_r = 250 *1e3 % in meters
     options.showplot = false; %control whether to display plots
 end
 
@@ -34,11 +35,15 @@ for j = 1:T
     totalTimeWindows=floor((totalDays - window_days) / time_step) + 1;
 
     % True SSH from full field composite at each time window
-    clearvars ssh_true
+    % rmid_max = [0:options.bin_size:options.max_r]';
+    % ssh_true = nan(length(rmid_max),totalTimeWindows);
+    spatial_window = [fliplr(0:-options.bin_size:-options.max_r),options.bin_size:options.bin_size:options.max_r]';
+    ssh_true = nan(length(spatial_window),length(spatial_window),totalTimeWindows);
+
     for i=1:totalTimeWindows
     % Calculate the start and end times for this window in days
     window_start_day = min(fullfield.t) + (i-1)*time_step;
-    window_end_day = window_start_day + window_days;
+    window_end_day = window_start_day + window_days-1;
 
     % Find indices that correspond to times within this window
     window_indices = find(fullfield.t >= window_start_day & fullfield.t <= window_end_day);
@@ -50,8 +55,13 @@ for j = 1:T
     fullfield_window.ssh = fullfield.ssh(window_indices);
 
     % Compute the 2D composite for the current time window
-    [mz_true, rmid_true, numz_true, stdz_true] = radialProfile(fullfield_window,eddyPath,showplot=0);
-    ssh_true(:,i) = mz_true;
+    eddyPath_window.xe=eddyPath.xe(fullfield_window.t-min(fullfield.t));
+    eddyPath_window.ye=eddyPath.ye(fullfield_window.t-min(fullfield.t));
+    % [mz_true, rmid_true, numz_true, stdz_true] = radialProfile(fullfield_window,eddyPath_window,showplot=0);
+    % ssh_true(:,i) = mz_true(1:length(rmid_max));
+    % time-averaged eddy composite from full field
+    [mz_true, xmid_true, ymid_true, numz_true, stdz_true] = composite2D(fullfield_window,eddyPath_window,showplot=0);
+    ssh_true(:,:,i) = mz_true(xmid_true==spatial_window,ymid_true==spatial_window);
     end
 
     % Compute the SSH model based on the selected model type
@@ -72,11 +82,15 @@ for j = 1:T
         alongtrack_window.ssh = alongtrack.ssh(window_indices);
     
         % Compute the 2D composite for the current time window
-        [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack_window,eddyPath,showplot=0);
-        ssh_model = mz_r;
-        ssh_true_interp = interp1(rmid_true,ssh_true(:,i), rmid_r);
+        eddyPath_window.xe=eddyPath.xe(alongtrack_window.t-min(alongtrack.t));
+        eddyPath_window.ye=eddyPath.ye(alongtrack_window.t-min(alongtrack.t));
+        % [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack_window,eddyPath_window,showplot=0);
+        % ssh_model = mz_r(1:length(rmid_max));
+        % time-averaged eddy composite from full field
+        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(fullfield,eddyPath_fun_t);% options: bin_size=12.5*1e3
+        ssh_model = mz_xy(1:length(rmid_max),1:length(rmid_max));
         % MSE per time window
-        mse_t(i) = mean((ssh_true_interp - ssh_model).^2,'omitmissing');
+        mse_t(i) = mean((ssh_true(:,:,i) - ssh_model).^2,'all','omitmissing');
         end
             
         case 'Gaussian'
@@ -115,8 +129,9 @@ for j = 1:T
     mse(j) = mean(mse_t);
 end
     figure
-    plot(window_size_array,mse);
-    xlabel('Window size');ylabel('MSE')
+    plot(window_size_array,mse*1e2);
+    xlabel('Window size', 'FontName', 'times');ylabel('MSE (cm^2)', 'FontName', 'times')
+    set(gca, 'fontname', 'times','fontsize', 16)
     % Store the absolute minimum MSE for the current model and time window
     min_MSE = min(mse);
 end

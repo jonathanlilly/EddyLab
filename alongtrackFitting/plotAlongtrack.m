@@ -87,8 +87,8 @@ c.Label.FontSize=16;
 c.Label.FontName='times';
 % Set color limits to match actual SSH range
 caxis([min(alongtrack.ssh(:)*1e2), max(alongtrack.ssh(:)*1e2)])
-xlabel('$x$ (km)', 'FontName', 'times','Interpreter','latex')
-ylabel('$y$ (km)', 'FontName', 'times','Interpreter','latex')
+xlabel('$Longitude$', 'FontName', 'times','Interpreter','latex')
+ylabel('$Latitude$', 'FontName', 'times','Interpreter','latex')
 zlabel('SSH (cm)', 'FontName', 'times','Interpreter','latex')
 % daspect([1,1,1.5])
 grid on
