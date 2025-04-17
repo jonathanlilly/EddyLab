@@ -2,7 +2,7 @@ function min_MSE = compute_min_MSE(alongtrack, eddyPath, fullfield, window_size_
 arguments
     alongtrack struct
     eddyPath struct
-    fullfield (:,1) {mustBeNumeric}
+    fullfield struct
     window_size_array (:,1) {mustBeNumeric}
     model string
     options.bin_size = 12.5 * 1e3; % in meters
@@ -17,13 +17,14 @@ alongtrack.x=alongtrack.x(sort_idx);
 alongtrack.y=alongtrack.y(sort_idx);
 alongtrack.ssh=alongtrack.ssh(sort_idx);
 
+totalDays = max(alongtrack.t)-min(alongtrack.t);
+
 [fullfield.t,sort_idx]=sort(fullfield.t,'ascend');
 fullfield.x=fullfield.x(sort_idx);
 fullfield.y=fullfield.y(sort_idx);
 fullfield.ssh=fullfield.ssh(sort_idx);
 
 T = length(window_size_array); %number of time variation
-min_MSE = zeros(num_models, num_windows);
 it_options = optimset('TolX',1e-3,'TolFun',1e-3);
 
 for j = 1:T
@@ -49,13 +50,13 @@ for j = 1:T
     fullfield_window.ssh = fullfield.ssh(window_indices);
 
     % Compute the 2D composite for the current time window
-    [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(fullfield_window,eddyPath_fun_t,showplot=0);% options: bin_size=12.5*1e3
-    ssh_true(:,i) = mz_xy';
+    [mz_true, rmid_true, numz_true, stdz_true] = radialProfile(fullfield_window,eddyPath,showplot=0);
+    ssh_true(:,i) = mz_true;
     end
 
     % Compute the SSH model based on the selected model type
     switch model
-        case 'SSH_composite'
+        case 'composite'
         for i=1:totalTimeWindows
         % Calculate the start and end times for this window in days
         window_start_day = min(alongtrack.t) + (i-1)*time_step;
@@ -71,15 +72,16 @@ for j = 1:T
         alongtrack_window.ssh = alongtrack.ssh(window_indices);
     
         % Compute the 2D composite for the current time window
-        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(alongtrack_window,eddyPath_fun_t,showplot=0);% options: bin_size=12.5*1e3
-        ssh_model = mz_xy';
+        [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack_window,eddyPath,showplot=0);
+        ssh_model = mz_r;
+        ssh_true_interp = interp1(rmid_true,ssh_true(:,i), rmid_r);
         % MSE per time window
-        mse_t(i) = mean((ssh_true(:,i) - ssh_model).^2);
+        mse_t(i) = mean((ssh_true_interp - ssh_model).^2,'omitmissing');
         end
             
         case 'Gaussian'
             % Fit a Gaussian model
-            [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initParams, eddyPath_fun_t, it_options,window=window_days);
+            [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initParams, eddyPath, it_options,window=window_days);
             for i=1:totalTimeWindows
             % Calculate the start and end times for this window in days
             window_start_day = min(alongtrack.t) + (i-1)*time_step;
@@ -94,8 +96,8 @@ for j = 1:T
             alongtrack_window.t = alongtrack.t(window_indices);
             alongtrack_window.ssh = alongtrack.ssh(window_indices);
     
-            eddy_model = analyticalEddyModel(eddyPath_fun_t,paramsCell{i});
-            ssh_model(:,i) = eddy_model(alongtrack_window.x,alongtrack_window.y,alongtrack_window.t);        
+            eddy_model = analyticalEddyModel(eddyPath,paramsCell{i});
+            ssh_model = eddy_model(alongtrack_window.x,alongtrack_window.y,alongtrack_window.t);        
             % MSE per time window
             mse_t(i) = mean((ssh_true(:,i) - ssh_model).^2);
             end
