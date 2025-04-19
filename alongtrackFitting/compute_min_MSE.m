@@ -37,7 +37,7 @@ for j = 1:T
     % True SSH from full field composite at each time window
     % rmid_max = [0:options.bin_size:options.max_r]';
     % ssh_true = nan(length(rmid_max),totalTimeWindows);
-    spatial_window = [fliplr(0:-options.bin_size:-options.max_r),options.bin_size:options.bin_size:options.max_r]';
+    spatial_window = [fliplr(-options.bin_size/2:-options.bin_size:-options.max_r),options.bin_size/2:options.bin_size:options.max_r]';
     ssh_true = nan(length(spatial_window),length(spatial_window),totalTimeWindows);
 
     for i=1:totalTimeWindows
@@ -61,7 +61,7 @@ for j = 1:T
     % ssh_true(:,i) = mz_true(1:length(rmid_max));
     % time-averaged eddy composite from full field
     [mz_true, xmid_true, ymid_true, numz_true, stdz_true] = composite2D(fullfield_window,eddyPath_window,showplot=0);
-    ssh_true(:,:,i) = mz_true(xmid_true==spatial_window,ymid_true==spatial_window);
+    ssh_true(:,:,i) = mz_true(xmid_true>=min(spatial_window)&xmid_true<=max(spatial_window),ymid_true>=min(spatial_window)&ymid_true<=max(spatial_window));
     end
 
     % Compute the SSH model based on the selected model type
@@ -87,8 +87,8 @@ for j = 1:T
         % [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack_window,eddyPath_window,showplot=0);
         % ssh_model = mz_r(1:length(rmid_max));
         % time-averaged eddy composite from full field
-        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(fullfield,eddyPath_fun_t);% options: bin_size=12.5*1e3
-        ssh_model = mz_xy(1:length(rmid_max),1:length(rmid_max));
+        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(alongtrack_window,eddyPath_window,showplot=0);% options: bin_size=12.5*1e3
+        ssh_model = mz_xy(xmid_xy>=min(spatial_window)&xmid_xy<=max(spatial_window),ymid_xy>=min(spatial_window)&ymid_xy<=max(spatial_window));
         % MSE per time window
         mse_t(i) = mean((ssh_true(:,:,i) - ssh_model).^2,'all','omitmissing');
         end
