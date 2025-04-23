@@ -10,7 +10,7 @@ arguments
     options.showplot = false; %control whether to display plots
 end
 
-overlap = 0.5; %50% overlap between time_window
+overlap = 0; %50% overlap between time_window
 
 % ensure that the arrays are in ascending order in time before windowing
 [alongtrack.t,sort_idx]=sort(alongtrack.t,'ascend');
@@ -18,12 +18,12 @@ alongtrack.x=alongtrack.x(sort_idx);
 alongtrack.y=alongtrack.y(sort_idx);
 alongtrack.ssh=alongtrack.ssh(sort_idx);
 
-totalDays = max(alongtrack.t)-min(alongtrack.t);
-
 [fullfield.t,sort_idx]=sort(fullfield.t,'ascend');
 fullfield.x=fullfield.x(sort_idx);
 fullfield.y=fullfield.y(sort_idx);
 fullfield.ssh=fullfield.ssh(sort_idx);
+
+totalDays = max(fullfield.t)-min(fullfield.t);
 
 T = length(window_size_array); %number of time variation
 it_options = optimset('TolX',1e-3,'TolFun',1e-3);
@@ -40,10 +40,13 @@ for j = 1:T
     spatial_window = [fliplr(-options.bin_size/2:-options.bin_size:-options.max_r),options.bin_size/2:options.bin_size:options.max_r]';
     ssh_true = nan(length(spatial_window),length(spatial_window),totalTimeWindows);
 
-    for i=1:totalTimeWindows
+    for i=totalTimeWindows:-1:1
     % Calculate the start and end times for this window in days
-    window_start_day = min(fullfield.t) + (i-1)*time_step;
-    window_end_day = window_start_day + window_days-1;
+    % window_start_day = min(fullfield.t) + (i-1)*time_step;
+    % window_end_day = window_start_day + window_days-1;
+    window_end_day = max(fullfield.t)-(i-1)*time_step;
+    window_start_day = window_end_day - window_days;
+
 
     % Find indices that correspond to times within this window
     window_indices = find(fullfield.t >= window_start_day & fullfield.t <= window_end_day);
@@ -67,10 +70,15 @@ for j = 1:T
     % Compute the SSH model based on the selected model type
     switch model
         case 'composite'
-        for i=1:totalTimeWindows
+        mse_t=zeros(totalTimeWindows,1);
+        coverage_t=zeros(totalTimeWindows,1);
+
+        for i=totalTimeWindows:-1:1
         % Calculate the start and end times for this window in days
-        window_start_day = min(alongtrack.t) + (i-1)*time_step;
-        window_end_day = window_start_day + window_days;
+        % window_start_day = min(alongtrack.t) + (i-1)*time_step;
+        % window_end_day = window_start_day + window_days-1;
+        window_end_day = max(alongtrack.t)-(i-1)*time_step;
+        window_start_day = window_end_day - window_days;
     
         % Find indices that correspond to times within this window
         window_indices = find(alongtrack.t >= window_start_day & alongtrack.t <= window_end_day);
@@ -91,8 +99,13 @@ for j = 1:T
         ssh_model = mz_xy(xmid_xy>=min(spatial_window)&xmid_xy<=max(spatial_window),ymid_xy>=min(spatial_window)&ymid_xy<=max(spatial_window));
         % MSE per time window
         mse_t(i) = mean((ssh_true(:,:,i) - ssh_model).^2,'all','omitmissing');
+        
+        % Calculate percentage of filled cells within the window
+        total_cells = length(spatial_window)^2;
+        filled_cells = sum(~isnan(ssh_model(:)));
+        coverage_t(i) = filled_cells / total_cells;    
         end
-            
+
         case 'Gaussian'
             % Fit a Gaussian model
             [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initParams, eddyPath, it_options,window=window_days);
@@ -127,11 +140,20 @@ for j = 1:T
 
     % MSE per window size
     mse(j) = mean(mse_t);
+    coverage_percentage(j)=mean(coverage_t);
+    
 end
     figure
-    plot(window_size_array,mse*1e2);
+    plot(window_size_array,mse*1e2,'LineWidth',2);
     xlabel('Window size', 'FontName', 'times');ylabel('MSE (cm^2)', 'FontName', 'times')
     set(gca, 'fontname', 'times','fontsize', 16)
     % Store the absolute minimum MSE for the current model and time window
     min_MSE = min(mse);
+
+
+    weight=0.5;
+    combined_score=weight*(mse - min(mse)) / (max(mse) - min(mse))+(1-weight)*(1-coverage_percentage);
+    figure,plot(window_size_array,combined_score,'LineWidth',2);
+    ylabel('Grid coverage'); xlabel('Window size')
+    set(gca, 'fontname', 'times','fontsize', 16)
 end
