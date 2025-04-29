@@ -28,8 +28,7 @@ yE = y - yo;
 % bin_size=12.5;
 max_r=round(max(abs(xE))/bin_size)*bin_size;
 [mz, xmid, ymid, numz, stdz] = twodstats(xE, yE, ssh, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
-
-% sometimes there's numical precision artifacts,
+% sometimes there's numerical precision artifacts,
 % which gives stdz as a very small complex number. Do a correction:
 stdz = abs(stdz);
 
