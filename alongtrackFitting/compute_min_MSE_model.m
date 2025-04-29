@@ -97,13 +97,24 @@ for j = 1:T
     %generate model
     switch model
     case 'composite'
-    % time-averaged eddy composite from full field
-    [mz, xmid, ymid, numz, stdz] = composite2D(alongtrack_window,eddyPath_window,showplot=0);
-
-    ssh_model = @(x,y) findSSHmodel(x,y,xmid,ymid,mz,spatial_window);
-    % % Create a function handle for this time window using interpolation
-    % ssh_model = @(x, y) interp2(xmid_true, ymid_true', mz_true, x, y, 'linear', NaN);
+        % time-averaged eddy composite from full field
+        [mz, xmid, ymid, numz, stdz] = composite2D(alongtrack_window,eddyPath_window,showplot=0);
+    
+        ssh_model = @(x,y) findSSHmodel(x,y,xmid,ymid,mz,spatial_window);
+        % % Create a function handle for this time window using interpolation
+        % ssh_model = @(x, y) interp2(xmid_true, ymid_true', mz_true, x, y, 'linear', NaN);
     case 'Gaussian'
+        % Fit a Gaussian model
+        [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack_window, eddyFit_fun, initParams, eddyPath_window, it_options,window=window_days);
+
+        eddy_model = analyticalEddyModel(eddyPath,paramsCell{i});
+        ssh_model = eddy_model(alongtrack_window.x,alongtrack_window.y,alongtrack_window.t);
+    case 'Elliptical'
+        % Fit an elliptical model
+        % [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack_window, eddyFit_fun, initParams, eddyPath_fun_t, it_options);
+    otherwise
+        error('Invalid model type');
+    end
     end
     %%
     % For final adjusted window, only evaluate the non-overlapping portion
