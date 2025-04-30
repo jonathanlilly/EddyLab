@@ -53,7 +53,7 @@ set(gca, 'fontname', 'times','FontSize',16)
 %% std profile over time
 figure;
 hold on; 
-jpcolor(rmid/1e3, [1:length(tmid)], stdz_rt*1e2), xlim([0, 250]) %mz_rt'./vmean(mz_rt,2)'
+jpcolor(rmid/1e3, [1:length(tmid)], abs(stdz_rt)*1e2), xlim([0, 250]) %mz_rt'./vmean(mz_rt,2)'
 xlabel('Radial distance (km)', 'FontName', 'times')
 ylabel('Time (Cycle)', 'FontName', 'times')
 colormap(brewermap([], '-Spectral'))

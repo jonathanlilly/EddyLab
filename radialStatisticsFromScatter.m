@@ -61,6 +61,8 @@ if strcmpi(options.firstAverage,"temporal")
     %azimuthal average
     [mz,~,rmid,numz,stdz1] = twodstats(rg,rg,mzxy,[-inf inf],rbin); %don't use the first index
     stdz2 = sqrt(twodstats(rg,rg,szxy.^2,[-inf inf],rbin)); %azimuthal average of temporal variance
+    stdz1 = abs(stdz1); %make complex number real
+    stdz2 = abs(stdz2); %make complex number real
 elseif strcmpi(options.firstAverage,"azimuthal")
     %statistics in r and t
     [mzrt,rmid,~,numz,szrt] = twodstats(sqrt(x.^2+y.^2),t,z,rbin,tbin);
@@ -68,6 +70,8 @@ elseif strcmpi(options.firstAverage,"azimuthal")
     numz =sum(numz,1,"omitnan")';%total number of points in each bin
     stdz1 = std(mzrt,1,1,"omitnan")';%temporal standard deviation of azimuthal average
     stdz2 = sqrt(mean(szrt.^2,1,"omitnan"))';%sqrt of temporal average of azimuthal variance
+    stdz1 = abs(stdz1); %make complex number real
+    stdz2 = abs(stdz2); %make complex number real
 end
 
 end
