@@ -1,34 +1,13 @@
-function [mz, xmid, ymid, numz, stdz, varargout] = composite2D(alongtrack,eddyPath,options)
+function [mz, xmid, ymid, numz, stdz, varargout] = composite2D_grid(eddy_field,eddyPath,options)
 arguments
-    alongtrack struct
+    eddy_field struct
     eddyPath struct
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
     options.showplot (1,1) logical = true %control whether to display plots
-    options.data_type string = "auto" % "grid", "alongtrack", or "auto"
 end
 
-use alongtrack
+use eddy_field
 use options
-
-% Determine data type if set to auto
-if options.data_type == "auto"
-    % Automatically detect data type based on ssh structure
-    if isvector(ssh) && length(ssh) == length(x) && length(ssh) == length(y) && length(ssh) == length(t)
-        % If ssh is a vector with same length as x, y, t, it's alongtrack data
-        data_type = "alongtrack";
-    elseif ndims(ssh) == 3 && size(ssh,1) == length(x) && size(ssh,2) == length(y) && size(ssh,3) == length(t)
-        % If ssh is a 3D array with dimensions matching x, y, t lengths, it's grid data
-        data_type = "grid";
-    elseif issparse(ssh) || isscalar(size(ssh))
-        % If ssh is sparse or has a single dimension, it's alongtrack data
-        data_type = "alongtrack";
-    else
-        warning('Could not automatically determine data type from ssh structure. Defaulting to alongtrack.');
-        data_type = "alongtrack";
-    end
-else
-    data_type = options.data_type;
-end
 
 % Calculate eddy positions at each alongtrack time directly
 % depending on if eddyPath is a function or an array
@@ -41,16 +20,33 @@ else
     yo = eddyPath.ye;
 end
 
-% Calculate eddy-relative coordinates directly
-xE = x - xo;
-yE = y - yo;
-
 % 2D statistics on defined bins
 % bin_size=12.5;
-max_r=round(max(abs(xE))/bin_size)*bin_size;
+max_r=(400*1e3/bin_size)*bin_size;
+xbin=-max_r:bin_size:max_r;
+xmid=(xbin+vshift(xbin,1,1))./2;
+xmid=xmid(1:end-1);
 
-%Interpolate if you have enough coverage to do a 2D interpolation
-[mz, xmid, ymid, numz, stdz] = twodstats(xE, yE, ssh, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
+% Loop over time
+for i=1:length(t)
+
+% Calculate eddy-relative coordinates directly
+xE = x - xo(i);
+yE = y - yo(i);
+
+% Create meshgrid of original xE, yE positions
+[XE, YE] = ndgrid(xE, yE);  % meshgrid in (x, y) order
+[XGrid, YGrid] = ndgrid(xmid, xmid);
+ssh_interp(:,:,i)=interpn(XE, YE, ssh(:,:,i), XGrid, YGrid,'linear',0);
+
+    % % Flatten for interpolation
+    % F = scatteredInterpolant(XE(:), YE(:), ssh(:, :, t)(:), 'linear', 'none');
+    % 
+    % % Interpolate onto bin center grid
+    % ssh_interp(:,:,t) = F(Xgrid, Ygrid);
+end
+
+[mz, xmid, ymid, numz, stdz] = twodstats(repmat(XGrid,[1 1 length(t)]), repmat(YGrid,[1 1 length(t)]), ssh_interp, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
 % sometimes there's numerical precision artifacts,
 % which gives stdz as a very small complex number. Do a correction:
 stdz = abs(stdz);
