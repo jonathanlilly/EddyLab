@@ -1,4 +1,4 @@
-function plotAlongtrack(alongtrack, eddyPath)
+function plotAlongtrack(alongtrack, eddyPath,options)
 % plotAlongtrack Visualizes along-track data and eddy paths
 %   This function creates plots of alongtrack data and eddy paths.
 %   Can handle both lat/lon and x/y coordinate systems.
@@ -12,13 +12,24 @@ function plotAlongtrack(alongtrack, eddyPath)
 arguments
     alongtrack struct
     eddyPath struct
+    options.time_window (1,:) {mustBeNumeric} = []
     % options.showLegend (1,1) logical = true
     % options.viewAngle (1,2) double = [-30, 35]
     % options.markerSize (1,1) double = 2
 end
 
+t0=min(alongtrack.t);
+timeo = [floor(t0):max(floor(alongtrack.t))+1];
+if isfield(options, 'time_window')
+    valid_time=logical(sum(floor(alongtrack.t)==timeo(options.time_window),2));
+    alongtrack.t=alongtrack.t(valid_time);
+    alongtrack.x=alongtrack.x(valid_time);
+    alongtrack.y=alongtrack.y(valid_time);
+    alongtrack.ssh=alongtrack.ssh(valid_time);
+end
+
 % Calculate eddy positions at each alongtrack time
-elapsed_time = alongtrack.t - min(alongtrack.t);
+elapsed_time = alongtrack.t - t0;
 
 % Initialize eddytrack struct
 eddytrack = struct();
@@ -37,7 +48,19 @@ if isfield(alongtrack, 'lat') && isfield(alongtrack, 'lon')
             eddytrack.latitude = eddyPath.lat;
         end
     else
-        error('Coordinate system mismatch: alongtrack is in lat/lon but eddyPath is not');
+        if isa(eddyPath.xe, 'function_handle')
+            eddytrack.x = eddyPath.xe(elapsed_time);
+            eddytrack.y = eddyPath.ye(elapsed_time);
+        else
+            eddytrack.x = eddyPath.xe;
+            eddytrack.y = eddyPath.ye;
+        end
+        % lato and lono are the center of the alongtrack domain
+        lono=(min(alongtrack.lon(:))+max(alongtrack.lon(:)))/2;
+        lato=(min(alongtrack.lat(:))+max(alongtrack.lat(:)))/2;
+    
+        [eddytrack.latitude, eddytrack.longitude] = xy2latlon(eddytrack.x/1e3,eddytrack.y/1e3,lato,lono);
+        eddytrack.longitude = deg180(eddytrack.longitude-lono) + lono; %avoids unwrapping issues
     end
     
     % Prepare for plotting in lat/lon
@@ -71,8 +94,8 @@ elseif isfield(alongtrack, 'x') && isfield(alongtrack, 'y')
     % Prepare for plotting in km
     plot_x = alongtrack.x / 1e3; % Convert to km
     plot_y = alongtrack.y / 1e3; % Convert to km
-    xlabel_str = 'x (km)';
-    ylabel_str = 'y (km)';
+    xlabel_str = '$x$ (km)';
+    ylabel_str = '$y$ (km)';
     eddy_x = eddytrack.x_km;
     eddy_y = eddytrack.y_km;
 else
@@ -87,8 +110,8 @@ plot(eddy_x(1), eddy_y(1), 'wo', 'markersize', 5, 'markerfacecolor', 'w')
 plot(eddy_x(end), eddy_y(end), 'wx', 'markersize', 10, 'linewidth', 2)
 plot(eddy_x(end), eddy_y(end), 'kx', 'markersize', 8, 'linewidth', 1.5)
 h(2) = scatter(plot_x, plot_y, 2, 'MarkerFaceColor', 'flat');
-xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16)
-ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14)
+xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16,'Interpreter','latex')
+ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14,'Interpreter','latex')
 box on
 axis tight
 

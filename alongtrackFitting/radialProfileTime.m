@@ -2,7 +2,8 @@ function [mz_rt, rmid, tmid, numz_rt, stdz_rt] = radialProfileTime(alongtrack,ed
 arguments
     alongtrack struct
     eddyPath struct
-    options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.rbin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.tbin_size (1,1) {mustBeNumeric} = 9.92 %in day
     options.showplot (1,1) logical = true %control whether to display plots
 end
 
@@ -26,9 +27,9 @@ yE = y - yo;
 
 % radial statistics on defined bins
 tmat = t-t(1);
-max_r = round(max(abs(xE))/bin_size)*bin_size;
-tbin = [0.5+min(tmat):9.92:max(tmat)+0.5];
-rbin = [-bin_size / 2:bin_size:max_r]'; %(0:bin_size:max_r)
+max_r = round(max(abs(xE))/rbin_size)*rbin_size;
+tbin = [0.5+min(tmat):tbin_size:max(tmat)+0.5];
+rbin = [-rbin_size / 2:rbin_size:max_r]'; %(0:rbin_size:max_r)
 %% radial profile vs time
 [mz_rt, rmid, tmid, numz_rt, stdz_rt] = twodstats(sqrt(xE.^2+yE.^2), tmat, ssh, rbin , tbin);
 

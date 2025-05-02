@@ -2,7 +2,7 @@ function [mzxy, rmid, numz, stdz] = radialProfile(alongtrack,eddyPath,options)
 arguments
     alongtrack struct
     eddyPath struct
-    options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
+    options.rbin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
     options.showplot (1,1) logical = true %control whether to display plots
 end
 
@@ -25,9 +25,9 @@ xE = x - xo;
 yE = y - yo;
 
 % radial statistics on defined bins
-max_r=round(max(abs(xE))/bin_size)*bin_size;
+max_r=round(max(abs(xE))/rbin_size)*rbin_size;
 tbin = [min(t, [], "all") - .5:1:max(t, [], "all") + 0.5]'; %tbin for radialStatisticsFromScatter has to be per days for 'azimuthal'
-rbin = [-bin_size / 2:bin_size:max_r]';
+rbin = [-rbin_size / 2:rbin_size:max_r]';
 
 %% Compute statistics
 [mzxy, rmid, numz, stdAziAvgTemp, avgAziStdTemp] = radialStatisticsFromScatter(xE, yE, t, ssh, rbin, tbin, firstAverage = 'temporal');
