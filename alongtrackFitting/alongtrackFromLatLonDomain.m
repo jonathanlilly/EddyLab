@@ -25,6 +25,7 @@ if numel(timeo) == 1
 else %If timeo is an array
 a = find(squeeze(min(timet, [], [1, 2])) > timeo(1), 1, 'first');
 b = find(squeeze(max(timet, [], [1, 2])) < timeo(end), 1, 'last');
+b=b+1; %allow next page
 end
 
 nRepeats = length(a:b);
