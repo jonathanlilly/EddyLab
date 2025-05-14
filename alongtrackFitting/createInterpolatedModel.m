@@ -33,5 +33,5 @@ function model_fun = createInterpolatedModel(day, windowCenters, modelFunctions)
     
     % Create an interpolated model function
     % This returns a new function that is a weighted combination of the two closest models
-    model_fun = @(x, y) (1-w) * model1(x, y) + w * model2(x, y);
+    model_fun = @(x, y, t) (1-w) * model1(x, y, t) + w * model2(x, y, t);
 end

@@ -20,12 +20,18 @@ end
 
 t0=min(alongtrack.t);
 timeo = [floor(t0):max(floor(alongtrack.t))+1];
-if isfield(options, 'time_window')
+if ~isempty(options.time_window)
     valid_time=logical(sum(floor(alongtrack.t)==timeo(options.time_window),2));
     alongtrack.t=alongtrack.t(valid_time);
+    alongtrack.ssh=alongtrack.ssh(valid_time);
+    if isfield(alongtrack, 'lat') && isfield(alongtrack, 'lon')
+    alongtrack.lat=alongtrack.lat(valid_time);
+    alongtrack.lon=alongtrack.lon(valid_time);
+    end
+    if isfield(alongtrack, 'x') && isfield(alongtrack, 'y')
     alongtrack.x=alongtrack.x(valid_time);
     alongtrack.y=alongtrack.y(valid_time);
-    alongtrack.ssh=alongtrack.ssh(valid_time);
+    end
 end
 
 % Calculate eddy positions at each alongtrack time
