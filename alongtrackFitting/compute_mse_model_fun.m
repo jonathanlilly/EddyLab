@@ -144,3 +144,6 @@ end
 
 end
 
+plotFitPosition(paramsCell,initParamsCell)
+xlim([min(x),max(x)]);ylim([min(y),max(y)])
+plotFitWindowed(paramsCell,true_params, eddyPath_fun_t)

@@ -5,12 +5,26 @@ scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3];
 if totalTimeWindows>1
 param_label = {'A','L','x_o','y_o','v_x','v_y'};
 param_var = {'A','L','x0','y0','cx','cy'};
-initParams.A = true_params.A-0.02;
-initParams.L = true_params.L+5e3;
-initParams.x0 = true_params.x0-50e3;
-initParams.y0 = true_params.y0+50e3;
-initParams.cx = true_params.cx-0.2e3;
-initParams.cy = true_params.cy+0.2e3;
+
+if length(initParams.A)==1
+    initParams.A=true_params.A;
+    initParams.L=true_params.L;
+else
+    initParams.A=true_params.A(window_start_day(i)-t0+1);
+    initParams.L=true_params.L(window_start_day(i)-t0+1);
+end
+
+% new inital parameters for this window
+initParams.A = A+2*(rand-0.5)*1e-2; %random uncertainty +/- 1e-2
+initParams.L = L+2*(rand-0.5)*1e3; %random uncertainty +/- 1e3
+%assuming you roughly know the eddy center from eddy-tracking algorithm
+%beginning of this particular window minus t0 offset of the entire eddy lifetime
+initParams.x0 = eddyPath_fun_t.xe(t0_window-t0)+2*(rand-0.5)*10e3; %random uncertainty +/- 10e3
+initParams.y0 = eddyPath_fun_t.ye(t0_window-t0)+2*(rand-0.5)*10e3;
+initParams.cx = cx(1)+2*(rand-0.5)*1e2;  %random uncertainty +/- 1e2
+initParams.cy = cy(1)+2*(rand-0.5)*1e2;
+initParamsCell{i,1} = initParams;
+
 xlimits = [true_params.A+[-0.05,0.05];true_params.L+[-10e3,10e3];true_params.x0+[-200e3,200e3];true_params.y0+[-200e3,200e3];true_params.cx+[-0.2e3,0.2e3];true_params.cy+[-0.2e3,0.2e3]];
 for j = 1:totalTimeWindows
     %redefine true params positions
@@ -18,7 +32,7 @@ for j = 1:totalTimeWindows
     true_params.y0=eddyPath_fun_t.ye(paramsCell{j}.t0-paramsCell{1}.t0);
     for i = 1:6
         paramValues(j, i) = paramsCell{j}.(param_var{i});
-        initParamValues(j, i) = true_params.(param_var{i});
+        initParamValues(j, i) = initParamsCell{i,1}.(param_var{i});
     end
 end
 figure;hold on
