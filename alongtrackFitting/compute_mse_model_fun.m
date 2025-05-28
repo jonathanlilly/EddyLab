@@ -5,10 +5,10 @@ arguments
     eddyPath_fun_t struct
     window_size (1,1) {mustBeNumeric}
     model string
-    options.bin_size = 12.5 * 1e3; % in meters
+    options.bin_size = 12.5 * 1e3 % in meters
     options.max_r = 250 *1e3 % in meters
-    options.overlap = 0; %50% overlap between time_window
-    options.showplot = false; %control whether to display plots
+    options.overlap = 0 %50% overlap between time_window
+    options.showplot = false %control whether to display plots
 end
 use options
 
@@ -16,14 +16,12 @@ t0=min(alongtrack.t);
 % totalDays = max(fullfield.t)-min(fullfield.t)+1;
 spatial_window = [fliplr(-bin_size/2:-bin_size:-max_r),bin_size/2:bin_size:max_r]';
 %%
-
+% Calculate the start and end times for this window in days
+[window_start_day, window_end_day, totalTimeWindows] = timeWindowBounds(alongtrack.t, window_size,overlap);
+    
 %generate model
 switch model
 case 'composite'
-    % Calculate the start and end times for this window in days
-    [window_start_day, window_end_day, totalTimeWindows] = timeWindowBounds(alongtrack.t, window_size,overlap);
-    
-    
     %for each time window generate a model (x,y,t) and compare to truth
     for i = 1:totalTimeWindows
     % Extract time window
@@ -47,10 +45,14 @@ case 'Gaussian'
     % Fit a Gaussian model
     it_options = optimset('TolX',1e-3,'TolFun',1e-3);
     [~,amplitude,radius] = findEddyCentroid(eddy_field.x, eddy_field.y, eddy_field.ssh,'thresholdratio',0.9,'GetBoundary', true);
-    initParams.A=amplitude;
-    initParams.L=radius;
+    eddyParams.A=amplitude;
+    eddyParams.L=radius;
+    eddyParams.xo=eddyPath_fun_t.xe;
+    eddyParams.yo=eddyPath_fun_t.ye;
+
+
     eddyFit_fun = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);
-    [paramsCell, initParamsCell,window_center] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, initParams, eddyPath_fun_t, it_options,window=window_size);
+    [paramsCell, trueParamsCell,window_center] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, eddyParams, it_options,window=window_size);
     
     % Store the SSH model function for each window
     ssh_model = cell(totalTimeWindows,1);
@@ -66,7 +68,6 @@ case 'Elliptical'
     % [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack_window, eddyFit_fun, initParams, eddyPath_fun_t, it_options);
 otherwise
     error('Invalid model type');
-end
 end
 %%
 % % For final adjusted window, only evaluate the non-overlapping portion
@@ -139,8 +140,6 @@ if options.showplot
     xlabel('Time (day)')
     ylabel('MSE (m^2)')
     set(gca,'fontname','times','fontsize',16)
-
-end
 
 end
 

@@ -44,7 +44,7 @@ alongtrackLatLon.lon = obs.lon(~isnan(obs.t(:)));
 alongtrackLatLon.lat = obs.lat(~isnan(obs.t(:)));
 
 if getSSH
-[~, ~, ssh] = trackextract(lat, lon, sla, region);
+[~, ~, ssh] = trackextract(lat, lon, ssh, region);
 obs.ssh = reshape(ssh(:,:,a:b),[],1);
 alongtrackLatLon.ssh = obs.ssh(~isnan(obs.t(:)));
 end

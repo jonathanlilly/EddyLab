@@ -1,107 +1,86 @@
-function plotFitWindowed(paramsCell,true_params, eddyPath_fun_t)
-totalTimeWindows=length(paramsCell);
-window_size=max(floor(paramsCell{1}.elapsed_time))+1;
-scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3];
-if totalTimeWindows>1
-param_label = {'A','L','x_o','y_o','v_x','v_y'};
-param_var = {'A','L','x0','y0','cx','cy'};
-
-if length(initParams.A)==1
-    initParams.A=true_params.A;
-    initParams.L=true_params.L;
-else
-    initParams.A=true_params.A(window_start_day(i)-t0+1);
-    initParams.L=true_params.L(window_start_day(i)-t0+1);
-end
-
-% new inital parameters for this window
-initParams.A = A+2*(rand-0.5)*1e-2; %random uncertainty +/- 1e-2
-initParams.L = L+2*(rand-0.5)*1e3; %random uncertainty +/- 1e3
-%assuming you roughly know the eddy center from eddy-tracking algorithm
-%beginning of this particular window minus t0 offset of the entire eddy lifetime
-initParams.x0 = eddyPath_fun_t.xe(t0_window-t0)+2*(rand-0.5)*10e3; %random uncertainty +/- 10e3
-initParams.y0 = eddyPath_fun_t.ye(t0_window-t0)+2*(rand-0.5)*10e3;
-initParams.cx = cx(1)+2*(rand-0.5)*1e2;  %random uncertainty +/- 1e2
-initParams.cy = cy(1)+2*(rand-0.5)*1e2;
-initParamsCell{i,1} = initParams;
-
-xlimits = [true_params.A+[-0.05,0.05];true_params.L+[-10e3,10e3];true_params.x0+[-200e3,200e3];true_params.y0+[-200e3,200e3];true_params.cx+[-0.2e3,0.2e3];true_params.cy+[-0.2e3,0.2e3]];
-for j = 1:totalTimeWindows
-    %redefine true params positions
-    true_params.x0=eddyPath_fun_t.xe(paramsCell{j}.t0-paramsCell{1}.t0);
-    true_params.y0=eddyPath_fun_t.ye(paramsCell{j}.t0-paramsCell{1}.t0);
+function plotFitWindowed(paramsCell, trueParamsCell, eddyPath_fun_t)
+    totalTimeWindows = length(paramsCell);
+    
+    % Get window size from first window
+    if ~isempty(paramsCell) && isfield(paramsCell{1}, 'elapsed_time')
+        window_size = max(unique(paramsCell{1}.elapsed_time)) + 1;
+    else
+        window_size = 10; % Default window size if not determinable
+    end
+    
+    % Define parameter labels and variable names
+    param_label = {'A (m)','L (km)','x_o (km)','y_o (km)','v_x (m/s)','v_y (m/s)'};
+    param_var = {'A','L','x0','y0','cx','cy'};
+    scale_factors = [1e2, 1e-3, 1e-3, 1e-3, 1e-3, 1e-3]; % For display units: A in m, L/x0/y0 in km
+    
+    % Extract values from each window
+    paramValues = zeros(totalTimeWindows, 6);
+    trueParamValues = zeros(totalTimeWindows, 6);
+    
+    for j = 1:totalTimeWindows
+        params = paramsCell{j};
+        trueParams = trueParamsCell{j};
+        t0=paramsCell{1}.t0;
+        current_window_t0=paramsCell{j}.t0;
+        window_start_day=current_window_t0-t0;
+        
+        % Get unique days in this window
+        % window_days = unique(params.elapsed_time + params.t0);
+        window_days = unique(params.elapsed_time)+window_start_day;
+        % Get true x0, y0 from the eddy path at the start of this window
+        x0_true = eddyPath_fun_t.xe(min(window_days));
+        y0_true = eddyPath_fun_t.ye(min(window_days));
+        
+        % Store parameter values
+        paramValues(j, 1) = params.A;
+        paramValues(j, 2) = params.L;
+        paramValues(j, 3) = params.x0;
+        paramValues(j, 4) = params.y0;
+        paramValues(j, 5) = params.cx;
+        paramValues(j, 6) = params.cy;
+        
+        % Store true parameter values
+        trueParamValues(j, 1) = mean(trueParams.A);
+        trueParamValues(j, 2) = mean(trueParams.L);
+        trueParamValues(j, 3) = x0_true;
+        trueParamValues(j, 4) = y0_true;
+        trueParamValues(j, 5) = trueParams.cx;
+        trueParamValues(j, 6) = trueParams.cy;
+    end
+    
+    % Create figure
+    figure('Position', [100, 100, 800, 800]);
+    
+    % Plot each parameter
     for i = 1:6
-        paramValues(j, i) = paramsCell{j}.(param_var{i});
-        initParamValues(j, i) = initParamsCell{i,1}.(param_var{i});
+        subplot(6, 1, i)
+        hold on
+        
+        % Plot fitted values
+        plot(1:totalTimeWindows, paramValues(:, i).*scale_factors(i), 'k.-', 'MarkerSize', 15, 'LineWidth', 1.5);
+        
+        % Plot true values
+        plot(1:totalTimeWindows, trueParamValues(:, i).*scale_factors(i), 'r.:', 'LineWidth', 1.5);
+        
+        % Labels and formatting
+        ylabel(param_label{i}, 'FontName', 'times', 'FontSize', 12);
+        grid on
+        
+        % Only add x-label to bottom plot
+        if i == 6
+            xlabel(sprintf('Window Number (window size = %d days)', window_size), 'FontName', 'times', 'FontSize', 12);
+            legend('Fitted', 'True', 'Location', 'best');
+        else
+            set(gca, 'XTickLabel', []);
+        end
+        
+        xlim([0.5, totalTimeWindows+0.5]);
+        
+        % Adjust spacing between subplots
+        pos = get(gca, 'Position');
+        set(gca, 'Position', [pos(1), pos(2)+0.01*(6-i), pos(3), pos(4)]);
     end
+    
+    % Add overall title
+    sgtitle(sprintf('Parameter Evolution Across %d Windows', totalTimeWindows), 'FontName', 'times', 'FontSize', 14);
 end
-figure;hold on
-for i = 1:6
-    subplot(6,1,i)  % 6 rows, 1 column
-    hold on
-    plot([1:totalTimeWindows],paramValues(:, i)./scale_factors(i), 'k.', 'MarkerSize', 15);
-    plot([1:totalTimeWindows],initParamValues(:, i)./scale_factors(i), 'r:', 'LineWidth', 1.5)  % Initial value
-    set(gca, 'fontname', 'times','fontsize',11)
-    hold off
-    ylabel(param_label{i},'fontname', 'times','fontsize',14)
-    if i~=3 && i~=4
-    %skip x0 and y0
-    % ylim([xlimits(i,1:2)]./scale_factors(i))
-    end
-     if i == 6
-        xlabel(strcat('Time (window=',num2str(window_size),' Days)'), 'fontname', 'times','fontsize',14)
-     else
-         set(gca,'xticklabel',[])
-     end
-     xlim([1,totalTimeWindows])
-    h = get(gca, 'Position');
-    set(gca, 'Position', [h(1) h(2)+(6-i)*0.01 h(3) h(4)+ 0.01])
-end
-% 
-end
-%  % Spatial window figure
-%     figure(n),hold on
-%     if i==1 && i~=totalTimeWindows
-%         % jpcolor(xc, yc, ssh(:,:,idx)')
-%         % plot(xt, yt, linewidth = 2,Color=[0.7,0.7,0.7]), axis tight, axis equal,
-%         plot([xilim(1) xilim(1) xilim(2) xilim(2) xilim(1)],[yilim(1) yilim(2) yilim(2) yilim(1) yilim(1)],linewidth=2)
-%         set(gca, 'fontname', 'times')
-%         xlim([-1000,1000]);ylim([-500,500])
-%         % colormap(brewermap([], '-Spectral'))
-%         % c = colorbar('EastOutside');
-%         % c.Label.String = 'ssh (cm)';
-%         % clim([-2.5, 12])
-%         xlabel('x (km)')
-%         ylabel('y (km)')
-% 
-%     elseif i==totalTimeWindows
-%         jpcolor(xc, yc, ssh(:,:,idx)')
-%         plot(xt, yt, linewidth = 2,Color=[0.7,0.7,0.7]), axis tight, axis equal,
-%         plot([xilim(1) xilim(1) xilim(2) xilim(2) xilim(1)],[yilim(1) yilim(2) yilim(2) yilim(1) yilim(1)],linewidth=2)
-%         set(gca, 'fontname', 'times')
-%         xlim([-1000,1000]);ylim([-500,500])
-%         colormap(brewermap([], '-Spectral'))
-%         c = colorbar('EastOutside');
-%         c.Label.String = 'ssh (cm)';
-%         clim([-2.5, 12])
-%         xlabel('x (km)')
-%         ylabel('y (km)')
-%         title(strcat('Time window = [',num2str(time_window(1)),', ',num2str(time_window(end)),'] cycles'))  
-%     else
-%         plot([xilim(1) xilim(1) xilim(2) xilim(2) xilim(1)],[yilim(1) yilim(2) yilim(2) yilim(1) yilim(1)],linewidth=2)
-%     end
-% 
-%     p0=[A,L,xoi,vxi,yoi,vyi];%[max(ssht),max(r),r(1),0];
-%     p0Series=[p0Series;p0];
-% 
-%     [p]=gaussianFreeCenter(x1(~isnan(ssht_range)),y1(~isnan(ssht_range)),t(~isnan(ssht_range)),ssht_range(~isnan(ssht_range)),p0,LB,UB,options);
-%     pSeries(i,:)=p;
-% 
-%     xc_fit=x_fit2-(p(3)+p(4).*t_fit2);
-%     yc_fit=y_fit2-(p(5)+p(6).*t_fit2);
-%     ssh_fit=p(1)*exp(-(xc_fit.^2+yc_fit.^2)/p(2)^2);
-%     ro_fit2=sqrt(xc_fit.^2+yc_fit.^2);
-%     ro_series(:,i)=ro_fit2(:);%reshape(ro_fit2,[],size(ro_fit2,3));
-%     ssh_series(:,i)=ssh_fit(:);
-% end
-

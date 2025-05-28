@@ -4,10 +4,32 @@ arguments
     eddyPath struct
     options.rbin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
     options.showplot (1,1) logical = true %control whether to display plots
+    options.data_type string = "auto" % "grid", "alongtrack", or "auto"
+    options.max_r (1,1) {mustBeNumeric} = 400*1e3 %in meter
 end
 
 use alongtrack
 use options
+
+% Determine data type if set to auto
+if options.data_type == "auto"
+    % Automatically detect data type based on ssh structure
+    if isvector(ssh) && length(ssh) == length(x) && length(ssh) == length(y) && length(ssh) == length(t)
+        % If ssh is a vector with same length as x, y, t, it's alongtrack data
+        data_type = "alongtrack";
+    elseif ndims(ssh) == 3 && size(ssh,1) == length(x) && size(ssh,2) == length(y) && size(ssh,3) == length(t)
+        % If ssh is a 3D array with dimensions matching x, y, t lengths, it's grid data
+        data_type = "grid";
+    elseif issparse(ssh) || isscalar(size(ssh))
+        % If ssh is sparse or has a single dimension, it's alongtrack data
+        data_type = "alongtrack";
+    else
+        warning('Could not automatically determine data type from ssh structure. Defaulting to alongtrack.');
+        data_type = "alongtrack";
+    end
+else
+    data_type = options.data_type;
+end
 
 % Calculate eddy positions at each alongtrack time directly
 % depending on if eddyPath is a function or an array
@@ -20,18 +42,34 @@ else
     yo = eddyPath.ye;
 end
 
-% Calculate eddy-relative coordinates directly
-xE = x - xo;
-yE = y - yo;
+if data_type == "grid"
+    % Grid data processing
+    [ssh_interp, XGrid, YGrid] = interpEddyCentric(x, y, t, xo, yo, ssh, rbin_size,max_r);
+
+ % Use interpolated coordinates and data
+    xE = repmat(XGrid, [1, 1, length(t)]);
+    yE = repmat(YGrid, [1, 1, length(t)]);
+    ssh_data = ssh_interp;
+    t_data= permute(repmat(t,[1 size(xE,1) size(xE,2)]),[2,3,1]);
+    
+else
+    % Alongtrack array data processing
+    
+    % Calculate eddy-relative coordinates directly
+    xE = x - xo;
+    yE = y - yo;
+    ssh_data = ssh;
+    t_data= t;
+end
 
 % radial statistics on defined bins
-max_r=round(max(abs(xE))/rbin_size)*rbin_size;
+max_r=round(max(sqrt(xE(:).^2 + yE(:).^2))/rbin_size)*rbin_size;
 tbin = [min(t, [], "all") - .5:1:max(t, [], "all") + 0.5]'; %tbin for radialStatisticsFromScatter has to be per days for 'azimuthal'
 rbin = [-rbin_size / 2:rbin_size:max_r]';
 
 %% Compute statistics
-[mzxy, rmid, numz, stdAziAvgTemp, avgAziStdTemp] = radialStatisticsFromScatter(xE, yE, t, ssh, rbin, tbin, firstAverage = 'temporal');
-[mzrt, ~, ~, stdTempAvgAzi, avgTempStdAzi] = radialStatisticsFromScatter(xE, yE, t, ssh, rbin, tbin, firstAverage = 'azimuthal');
+[mzxy, rmid, numz, stdAziAvgTemp, avgAziStdTemp] = radialStatisticsFromScatter(xE, yE, t_data, ssh_data, rbin, tbin, firstAverage = 'temporal');
+[mzrt, ~, ~, stdTempAvgAzi, avgTempStdAzi] = radialStatisticsFromScatter(xE, yE, t_data, ssh_data, rbin, tbin, firstAverage = 'azimuthal');
 % Std Total
 stdTotalxy = sqrt(stdAziAvgTemp.^2+avgAziStdTemp.^2);
 stdTotalrt = sqrt(stdTempAvgAzi.^2+avgTempStdAzi.^2);

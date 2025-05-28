@@ -16,6 +16,7 @@ persistent data p0_vals ref_params
             plot(data(i,:), '.', 'MarkerSize', 15);
             hold on
             plot(xlim, [ref_params.(param_var{i}); ref_params.(param_var{i})]./scale_factors(i), 'r:', 'LineWidth', 1.5)  % Initial value
+            plot(1, p0_vals(i), 'go', 'MarkerSize', 8); % Initial value
             hold off
             ylabel(param_label{i},'fontsize',12)
             grid on

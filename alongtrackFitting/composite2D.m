@@ -5,6 +5,8 @@ arguments
     options.bin_size (1,1) {mustBeNumeric} = 12.5*1e3 %in meter
     options.showplot (1,1) logical = true %control whether to display plots
     options.data_type string = "auto" % "grid", "alongtrack", or "auto"
+    options.max_r (1,1) {mustBeNumeric} = 400*1e3 %in meter
+    options.interp (1,1) logical = false %interpolate scattered data onto regular grid
 end
 
 use alongtrack
@@ -41,15 +43,33 @@ else
     yo = eddyPath.ye;
 end
 
-% Calculate eddy-relative coordinates directly
-xE = x - xo;
-yE = y - yo;
-
+if data_type == "grid"
+    % Grid data processing
+    [ssh_interp, XGrid, YGrid] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
+    
+    % Create 3D coordinate matrices varying in time
+    xE = repmat(XGrid, [1, 1, length(t)]);
+    yE = repmat(YGrid, [1, 1, length(t)]);
+    ssh_data = ssh_interp;
+    
+else
+    % Alongtrack array data processing
+    if options.interp
+    [ssh_interp, XGrid, YGrid] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
+    xE = repmat(XGrid, [1, 1, length(unique(floor(t)))]);
+    yE = repmat(YGrid, [1, 1, length(unique(floor(t)))]);
+    ssh_data = ssh_interp;
+    else
+       
+    % Calculate eddy-relative coordinates directly
+    xE = x - xo;
+    yE = y - yo;
+    ssh_data = ssh;
+    end
+end
 % 2D statistics on defined bins
-% bin_size=12.5;
-max_r=round(max(abs(xE))/bin_size)*bin_size;
-
-[mz, xmid, ymid, numz, stdz] = twodstats(xE, yE, ssh, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
+max_r = round(max(abs([xE(:); yE(:)]))/bin_size)*bin_size;
+[mz, xmid, ymid, numz, stdz] = twodstats(xE, yE, ssh_data, -max_r:bin_size:max_r, -max_r:bin_size:max_r);
 % sometimes there's numerical precision artifacts,
 % which gives stdz as a very small complex number. Do a correction:
 stdz = abs(stdz);

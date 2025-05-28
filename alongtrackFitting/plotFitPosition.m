@@ -1,36 +1,45 @@
-function plotFitPosition(paramsCell,initParamsCell)
+function plotFitPosition(eddyPath_fun_t, paramsCell, trueParamsCell)
+%%
 totalTimeWindows=length(paramsCell);
 th = 0:pi/50:2*pi;
 figure;hold on
 for j = 1:totalTimeWindows
-    if totalTimeWindows==1
-        initParams=initParamsCell;
-        params=paramsCell;
-    else
-        initParams=initParamsCell{j};
+    if iscell(paramsCell)
+        trueParams=trueParamsCell{j};
         params=paramsCell{j};
+        t0=paramsCell{1}.t0;
+        current_window_t0=paramsCell{j}.t0;
+        window_start_day=current_window_t0-t0;
+    else
+        trueParams=trueParamsCell;
+        params=paramsCell;
+        window_start_day=0;
     end
-    % True positions
-    xo_true = initParams.x0 + initParams.cx*max(params.elapsed_time);
-    yo_true = initParams.y0 + initParams.cy*max(params.elapsed_time);
-    L_true = initParams.L;
+    
+    % True positions on the last day of the window
+    xo_true = mean(eddyPath_fun_t.xe(unique(params.elapsed_time)+window_start_day));
+    yo_true = mean(eddyPath_fun_t.ye(unique(params.elapsed_time)+window_start_day));
+    A_true = mean(trueParams.A);
+    L_true = mean(trueParams.L);
 
-    % Fit position
-    xo_fit = params.x0 + params.cx*max(params.elapsed_time);
-    yo_fit = params.y0 + params.cy*max(params.elapsed_time);
+    % Fit position on the last day of the window
+    xo_fit = mean(params.x0 + params.cx*unique(params.elapsed_time));
+    yo_fit = mean(params.y0 + params.cy*unique(params.elapsed_time));
+    A_fit = params.A;
     L_fit = params.L;
+    
+    plot(L_true*sin(th)+xo_true, L_true*cos(th)+yo_true,'r');
+    plot(L_fit*sin(th)+xo_fit, L_fit*cos(th)+yo_fit,'b--');
 
-    plot(L_true*sin(th)+xo_true, L_true*cos(th)+yo_true,'r--');
-    plot(L_fit*sin(th)+xo_fit, L_fit*cos(th)+yo_fit,'b');
-
-    plot(xo_true, yo_true,'r*');
-    plot(xo_fit, yo_fit,'b*');
+    plot(xo_true, yo_true,'rx');
+    plot(xo_fit, yo_fit,'b+');
 
     % Calculate error
     position_error(j) = sqrt((xo_fit - xo_true).^2 + (yo_fit - yo_true).^2);
 end
 
 axis equal
+
 % xlim([min(x),max(x)]);ylim([min(y),max(y)])
 box on
 legend('True position', 'Fit position')

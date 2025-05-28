@@ -24,7 +24,7 @@ for n=1:length(timeo)
     %create a region enclosing minima and maxima lon and lat
     region = [min(long(:)), max(long(:)), min(latg(:)), max(latg(:))];
 
-    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),getSSH='true');
+    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),getSSH=true);
     
     % Concatenate results
 
