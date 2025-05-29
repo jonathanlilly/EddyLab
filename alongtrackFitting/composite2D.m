@@ -55,12 +55,9 @@ if data_type == "grid"
 else
     % Alongtrack array data processing
     if options.interp
-    [ssh_interp, XGrid, YGrid] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
-    xE = repmat(XGrid, [1, 1, length(unique(floor(t)))]);
-    yE = repmat(YGrid, [1, 1, length(unique(floor(t)))]);
+    [ssh_interp, xE, yE] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
     ssh_data = ssh_interp;
     else
-       
     % Calculate eddy-relative coordinates directly
     xE = x - xo;
     yE = y - yo;

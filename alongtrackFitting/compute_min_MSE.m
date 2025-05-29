@@ -95,7 +95,7 @@ for j = 1:T
         % [mz_r, rmid_r, numz_r, stdz_r] = radialProfile(alongtrack_window,eddyPath_window,showplot=0);
         % ssh_model = mz_r(1:length(rmid_max));
         % time-averaged eddy composite from full field
-        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(alongtrack_window,eddyPath_window,showplot=0);% options: bin_size=12.5*1e3
+        [mz_xy, xmid_xy, ymid_xy, numz_xy, stdz_xy] = composite2D(alongtrack_window,eddyPath_window,showplot=0,interp=true);% options: bin_size=12.5*1e3
         ssh_model = mz_xy(xmid_xy>=min(spatial_window)&xmid_xy<=max(spatial_window),ymid_xy>=min(spatial_window)&ymid_xy<=max(spatial_window));
         % MSE per time window
         mse_t(i) = mean((ssh_true(:,:,i) - ssh_model).^2,'all','omitmissing');
@@ -144,16 +144,16 @@ for j = 1:T
     
 end
     figure
-    plot(window_size_array,mse*1e2,'LineWidth',2);
+    plot(window_size_array,sqrt(mse*1e2),'LineWidth',2);
     xlabel('Window size', 'FontName', 'times');ylabel('MSE (cm^2)', 'FontName', 'times')
     set(gca, 'fontname', 'times','fontsize', 16)
     % Store the absolute minimum MSE for the current model and time window
     min_MSE = min(mse);
 
 
-    weight=0.5;
-    combined_score=weight*(mse - min(mse)) / (max(mse) - min(mse))+(1-weight)*(1-coverage_percentage);
-    figure,plot(window_size_array,combined_score,'LineWidth',2);
-    ylabel('Grid coverage'); xlabel('Window size')
-    set(gca, 'fontname', 'times','fontsize', 16)
+    % weight=0.5;
+    % combined_score=weight*(mse - min(mse)) / (max(mse) - min(mse))+(1-weight)*(1-coverage_percentage);
+    % figure,plot(window_size_array,combined_score,'LineWidth',2);
+    % ylabel('Grid coverage'); xlabel('Window size')
+    % set(gca, 'fontname', 'times','fontsize', 16)
 end

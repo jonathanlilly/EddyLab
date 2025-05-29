@@ -28,11 +28,11 @@ for j = 1:totalTimeWindows
     A_fit = params.A;
     L_fit = params.L;
     
-    plot(L_true*sin(th)+xo_true, L_true*cos(th)+yo_true,'r');
-    plot(L_fit*sin(th)+xo_fit, L_fit*cos(th)+yo_fit,'b--');
+    plot((L_true*sin(th)+xo_true)/1e3, (L_true*cos(th)+yo_true)/1e3,'r');
+    plot((L_fit*sin(th)+xo_fit)/1e3, (L_fit*cos(th)+yo_fit)/1e3,'b--');
 
-    plot(xo_true, yo_true,'rx');
-    plot(xo_fit, yo_fit,'b+');
+    plot(xo_true/1e3, yo_true/1e3,'rx');
+    plot(xo_fit/1e3, yo_fit/1e3,'b+');
 
     % Calculate error
     position_error(j) = sqrt((xo_fit - xo_true).^2 + (yo_fit - yo_true).^2);

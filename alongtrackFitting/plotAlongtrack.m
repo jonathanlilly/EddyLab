@@ -110,14 +110,14 @@ end
 
 % First figure: Track visualization
 figure; hold on
+h(2) = scatter(plot_x, plot_y, 2, 'MarkerFaceColor', 'flat');
+xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16,'Interpreter','latex')
+ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14,'Interpreter','latex')
 h(1) = plot(eddy_x, eddy_y, 'LineWidth', 3, 'Color', 0*[1 1 1]);
 plot(eddy_x(1), eddy_y(1), 'ko', 'markersize', 8, 'markerfacecolor', 'k')
 plot(eddy_x(1), eddy_y(1), 'wo', 'markersize', 5, 'markerfacecolor', 'w')
 plot(eddy_x(end), eddy_y(end), 'wx', 'markersize', 10, 'linewidth', 2)
 plot(eddy_x(end), eddy_y(end), 'kx', 'markersize', 8, 'linewidth', 1.5)
-h(2) = scatter(plot_x, plot_y, 2, 'MarkerFaceColor', 'flat');
-xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16,'Interpreter','latex')
-ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14,'Interpreter','latex')
 box on
 axis tight
 
