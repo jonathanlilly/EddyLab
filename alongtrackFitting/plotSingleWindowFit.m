@@ -17,14 +17,16 @@ j=window_index;
     window_days = unique(params.elapsed_time)+window_start_day;
     % window_center=round(mean(window_days));
     % Extract alongtrack data for this window
-    [alongtrack_window, ~] = extractAlongtrackWindow(alongtrack, max(window_days), max(window_days));
+    [alongtrack_window, ~] = extractAlongtrackWindow(alongtrack, max(window_days)+t0, max(window_days)+t0);
     
     % Create figure
     figure('Position', [100, 100, 900, 400]);
     
     % Plot SSH data
-    subplot(1, 2, 1);
+    % subplot(1, 2, 1);
     scatter(alongtrack_window.x/1e3, alongtrack_window.y/1e3, 30, alongtrack_window.ssh*100, 'filled');
+    cmap = brewermap(256, '-Spectral');
+    colormap(cmap)
     colorbar;
     hold on;
     
@@ -57,38 +59,38 @@ j=window_index;
     grid on;
     xlabel('x (km)', 'FontName', 'times', 'FontSize', 12);
     ylabel('y (km)', 'FontName', 'times', 'FontSize', 12);
-    title('SSH Data with Fitted Model', 'FontName', 'times', 'FontSize', 14);
-    legend('SSH Data', 'True Path', 'Fitted Path', 'True Radius', 'Fitted Radius', 'True Center', 'Fitted Center');
+    % title('SSH Data with Fitted Model', 'FontName', 'times', 'FontSize', 14);
+    lg=legend('SSH Data', 'True Path', 'Fitted Path', 'True Radius', 'Fitted Radius', 'True Center', 'Fitted Center','location','eastoutside');
     axis equal;
-    colormap(flipud(parula));
     
-    % Plot parameter comparison
-    subplot(1, 2, 2);
     
-    % Define parameters to compare
-    param_names = {'A (m)', 'L (km)', 'x₀ (km)', 'y₀ (km)', 'c_x (m/s)', 'c_y (m/s)'};
-    fitted_vals = [params.A, params.L/1e3, params.x0/1e3, params.y0/1e3, params.cx, params.cy];
-    true_vals = [mean(trueParams.A), mean(trueParams.L)/1e3, xo_true(1)/1e3, yo_true(1)/1e3, trueParams.cx, trueParams.cy];
-    
-    % Calculate percent differences
-    percent_diff = 100 * (fitted_vals - true_vals) ./ true_vals;
-    
-    % Create bar chart
-    bar([fitted_vals; true_vals]', 'grouped');
-    grid on;
-    set(gca, 'XTickLabel', param_names, 'XTickLabelRotation', 45);
-    legend('Fitted', 'True', 'Location', 'best');
-    ylabel('Parameter Value', 'FontName', 'times', 'FontSize', 12);
-    title('Parameter Comparison', 'FontName', 'times', 'FontSize', 14);
-    
-    % Add text with percent differences
-    for i = 1:length(param_names)
-        text(i, max(fitted_vals(i), true_vals(i))*1.1, sprintf('%.1f%%', percent_diff(i)), ...
-             'HorizontalAlignment', 'center', 'FontName', 'times', 'FontSize', 10);
-    end
-    
-    % Adjust y-limits to accommodate text
-    ylim([min(min(fitted_vals), min(true_vals))*0.9, max(max(fitted_vals), max(true_vals))*1.3]);
+    % % Plot parameter comparison
+    % subplot(1, 2, 2);
+    % 
+    % % Define parameters to compare
+    % param_names = {'A (m)', 'L (km)', 'x₀ (km)', 'y₀ (km)', 'c_x (m/s)', 'c_y (m/s)'};
+    % fitted_vals = [params.A, params.L/1e3, params.x0/1e3, params.y0/1e3, params.cx, params.cy];
+    % true_vals = [mean(trueParams.A), mean(trueParams.L)/1e3, xo_true(1)/1e3, yo_true(1)/1e3, trueParams.cx, trueParams.cy];
+    % 
+    % % Calculate percent differences
+    % percent_diff = 100 * (fitted_vals - true_vals) ./ true_vals;
+    % 
+    % % Create bar chart
+    % bar([fitted_vals; true_vals]', 'grouped');
+    % grid on;
+    % set(gca, 'XTickLabel', param_names, 'XTickLabelRotation', 45);
+    % legend('Fitted', 'True', 'Location', 'best');
+    % ylabel('Parameter Value', 'FontName', 'times', 'FontSize', 12);
+    % title('Parameter Comparison', 'FontName', 'times', 'FontSize', 14);
+    % 
+    % % Add text with percent differences
+    % for i = 1:length(param_names)
+    %     text(i, max(fitted_vals(i), true_vals(i))*1.1, sprintf('%.1f%%', percent_diff(i)), ...
+    %          'HorizontalAlignment', 'center', 'FontName', 'times', 'FontSize', 10);
+    % end
+    % 
+    % % Adjust y-limits to accommodate text
+    % ylim([min(min(fitted_vals), min(true_vals))*0.9, max(max(fitted_vals), max(true_vals))*1.3]);
     
     % Add overall title
     sgtitle(sprintf('Window %d Analysis (Days %d-%d)', window_index, min(window_days), max(window_days)), ...

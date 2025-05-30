@@ -5,8 +5,8 @@ arguments
     initParams struct
     it_options struct
     % options struct
-    options.LB (1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
-    options.UB (1,6) double %= [30, 150, 1000e3, 500e3, 0, 0]
+    options.bound struct%(1,6) double %= [0, 50, -1000e3, -500e3, -10, -10]
+    % options.UB %(1,6) double %= [30, 150, 1000e3, 500e3, 0, 0]
 end
 use alongtrack
 use options
@@ -33,9 +33,14 @@ p0_scaled = p0 ./ scale_factors;
 % Scaled penalty function
 penalty_function_scaled = @(p_scaled) sum((ssh - eddyFit_fun(x, y, elapsed_time, p_scaled(1)*scale_factors(1), p_scaled(2)*scale_factors(2), p_scaled(3)*scale_factors(3), p_scaled(4)*scale_factors(4), p_scaled(5)*scale_factors(5), p_scaled(6)*scale_factors(6))).^2);
 
-if isfield(options,'LB')
-    % pmin=fminsearchbnd(penalty_function, p0, LB, UB, it_options);
-    pmin_scaled = fminsearchbnd(penalty_function_scaled, p0_scaled, LB, UB, it_options);
+if isfield(options,'bound')
+    % Scale bounds
+    bound_scaled.lower = bound.lower./ scale_factors;
+    bound_scaled.upper = bound.upper./ scale_factors;
+    
+    % Ensure initial guess is within bounds
+    p0_scaled = max(min(p0_scaled, bound_scaled.upper), bound_scaled.lower);
+    pmin_scaled = fminsearchbnd(penalty_function_scaled, p0_scaled, bound_scaled.lower, bound_scaled.upper, it_options);
 
 else
     % pmin=fminsearch(penalty_function, p0, it_options);
