@@ -52,14 +52,15 @@ case 'Gaussian'
 
 
     eddyFit_fun = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);
-    [paramsCell, trueParamsCell,window_center] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, eddyParams, it_options,window=window_size);
+    
+    [paramsCell, trueParamsCell, window_center] = FitAlongTrackXYToEddyModelWindowed(fullfield, eddyFit_fun, eddyParams, it_options,"window", window_size,usePreviousFitConstraints=true);
     
     % Store the SSH model function for each window
     ssh_model = cell(totalTimeWindows,1);
     
     for i = 1:totalTimeWindows
         params = paramsCell{i};
-        ssh_model{i} = @(x,y,t) eddyFit_fun(x,y,t-params.t0,params.A,params.L,params.x0,params.y0,params.cx,params.cy);
+        ssh_model{i} = @(x,y,t) eddyFit_fun(x,y,t+paramsCell{i}.t0-t0,paramsCell{i}.A,paramsCell{i}.L,paramsCell{i}.x0,paramsCell{i}.y0,paramsCell{i}.cx,paramsCell{i}.cy);
     end
     % eddy_model = analyticalEddyModel(eddyPath,paramsCell{i});
     % ssh_model{i} = eddy_model(alongtrack_window.x,alongtrack_window.y,alongtrack_window.t);
@@ -107,6 +108,7 @@ mse_t(n) = mean((ssh_true_n - ssh_model_n).^2,'all','omitnan');
 end
 % MSE per window size
 mse = mean(mse_t,'omitnan');
+%% 
 
 if options.showplot
     %% Plot true, model, and diff SSH
