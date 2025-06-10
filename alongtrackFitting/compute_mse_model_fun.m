@@ -1,4 +1,4 @@
-function [mse_t,mse]=compute_mse_model_fun(alongtrack,eddy_field, eddyPath_fun_t, window_size, model, options)
+function [rmse_daily,rmse]=compute_model_error(alongtrack,eddy_field, eddyPath_fun_t, window_size, model, options)
 arguments
     alongtrack struct
     eddy_field struct
@@ -12,14 +12,17 @@ arguments
 end
 use options
 
-t0=min(alongtrack.t);
-% totalDays = max(fullfield.t)-min(fullfield.t)+1;
+t0=floor(min(alongtrack.t));
+totalDays = length(eddy_field.t);
 spatial_window = [fliplr(-bin_size/2:-bin_size:-max_r),bin_size/2:bin_size:max_r]';
-%%
+
 % Calculate the start and end times for this window in days
 [window_start_day, window_end_day, totalTimeWindows] = timeWindowBounds(alongtrack.t, window_size,overlap);
-    
-%generate model
+window_center = (window_start_day + window_end_day) / 2;
+
+%generate model for each window
+ssh_model = cell(totalTimeWindows,1);
+
 switch model
 case 'composite'
     %for each time window generate a model (x,y,t) and compare to truth
@@ -38,76 +41,79 @@ case 'composite'
     % time-averaged eddy composite from full field
     [mz, xmid, ymid, numz, stdz] = composite2D(alongtrack_window,eddyPath_window,showplot=0);
 
-    ssh_model{i} = @(x,y) findSSHmodel(x,y,xmid,ymid,mz,spatial_window);
+    ssh_model{i} = @(x,y,t) findSSHmodel(x,y,xmid,ymid,mz,spatial_window);
     end
-    window_center = (window_start_day + window_end_day) / 2;
+    
 case 'Gaussian'
-    % Fit a Gaussian model
-    it_options = optimset('TolX',1e-3,'TolFun',1e-3);
+    % Get eddy parameters
     [~,amplitude,radius] = findEddyCentroid(eddy_field.x, eddy_field.y, eddy_field.ssh,'thresholdratio',0.9,'GetBoundary', true);
     eddyParams.A=amplitude;
     eddyParams.L=radius;
     eddyParams.xo=eddyPath_fun_t.xe;
     eddyParams.yo=eddyPath_fun_t.ye;
 
-
+    % Fit models to windows
     eddyFit_fun = @(x,y,t,A,L,x0,y0,cx,cy) A.*exp(-((x-x0-cx*t).^2 + (y-y0-cy*t).^2)/L^2);
+    it_options = optimset('TolX',1e-3,'TolFun',1e-3);
+    [paramsCell, trueParamsCell, ~] = FitAlongTrackXYToEddyModelWindowed(alongtrack, eddyFit_fun, eddyParams, it_options,"window", window_size,usePreviousFitConstraints=true);
     
-    [paramsCell, trueParamsCell, window_center] = FitAlongTrackXYToEddyModelWindowed(fullfield, eddyFit_fun, eddyParams, it_options,"window", window_size,usePreviousFitConstraints=true);
-    
-    % Store the SSH model function for each window
-    ssh_model = cell(totalTimeWindows,1);
-    
+    % Create model functions
     for i = 1:totalTimeWindows
         params = paramsCell{i};
-        ssh_model{i} = @(x,y,t) eddyFit_fun(x,y,t+paramsCell{i}.t0-t0,paramsCell{i}.A,paramsCell{i}.L,paramsCell{i}.x0,paramsCell{i}.y0,paramsCell{i}.cx,paramsCell{i}.cy);
+        ssh_model{i} = @(x,y,t) eddyFit_fun(x,y,t-(params.t0-t0), params.A, params.L, params.x0, params.y0, params.cx, params.cy);
     end
-    % eddy_model = analyticalEddyModel(eddyPath,paramsCell{i});
-    % ssh_model{i} = eddy_model(alongtrack_window.x,alongtrack_window.y,alongtrack_window.t);
+
 case 'Elliptical'
     % Fit an elliptical model
     % [paramsCell, initParamsCell] = FitAlongTrackXYToEddyModelWindowed(alongtrack_window, eddyFit_fun, initParams, eddyPath_fun_t, it_options);
 otherwise
     error('Invalid model type');
 end
-%%
-% % For final adjusted window, only evaluate the non-overlapping portion
-% if isFinalWindow
-%     % Calculate the start of non-overlapping days
-%     eval_start_day = t0 + (totalTimeWindows-1)*time_step;
-% else
-%     eval_start_day = window_start_day;
-% end
 
-%% Create a function that returns an interpolated model for any day
+%% Compute MSE per day
+% Create a function that returns an interpolated model for any day
 getModelForDay = @(day) createInterpolatedModel(day, window_center, ssh_model);
 
-% for n=1:length([eval_start_day:window_end_day])
-mse_t=nan(length(eddy_field.t),1);
+% Initialize MSE array
+mse_t = nan(totalDays, 1);
 
-for n=1:totalDays
-% Convert to eddy-centered coordinates
-x_rel = eddy_field.x - eddyPath_fun_t.xe(n-1);
-y_rel = eddy_field.y - eddyPath_fun_t.ye(n-1);
+for n = 1:totalDays
+    % Get model for this day
+    if totalTimeWindows == 1
+        ssh_model_interp = ssh_model{1};
+    else
+        ssh_model_interp = getModelForDay(t0 + n - 1);
+    end
 
-% Find points within spatial window
-in_window_x = x_rel >= min(spatial_window) & x_rel <= max(spatial_window);
-in_window_y = y_rel >= min(spatial_window) & y_rel <= max(spatial_window);
-[x_grid,y_grid] = ndgrid(x_rel(in_window_x),y_rel(in_window_y));
-
-ssh_true_n=eddy_field.ssh(in_window_x,in_window_y,n)';
-if totalTimeWindows==1
-    ssh_model_n=ssh_model{1}(x_grid',y_grid',n);
-else
-% Get the model function for this specific day
-ssh_model_interp = getModelForDay(t0+n-1);
-ssh_model_n=ssh_model_interp(x_grid',y_grid',n);
+    % eddy-centered coordinates
+    x_rel = eddy_field.x - eddyPath_fun_t.xe(n-1);
+    y_rel = eddy_field.y - eddyPath_fun_t.ye(n-1);
+    
+    % Find points within spatial window
+    in_window_x = x_rel >= min(spatial_window) & x_rel <= max(spatial_window);
+    in_window_y = y_rel >= min(spatial_window) & y_rel <= max(spatial_window);
+    
+    ssh_true_n = eddy_field.ssh(in_window_x, in_window_y, n)';
+    % Handle coordinates based on model type
+    switch model
+        case 'composite'
+            % Composite models expect eddy-centered coordinates
+            [x_grid, y_grid] = ndgrid(x_rel(in_window_x), y_rel(in_window_y));
+            ssh_model_n = ssh_model_interp(x_grid', y_grid', n-1);
+            
+        case 'Gaussian'
+            % Gaussian models expect earth fixed coordinates
+            [x_grid, y_grid] = ndgrid(eddy_field.x, eddy_field.y);
+            ssh_model_fulldomain = ssh_model_interp(x_grid', y_grid', n-1);
+            ssh_model_n = ssh_model_fulldomain(in_window_y, in_window_x);
+    end
+    
+    % Compute MSE for this day
+    mse_daily(n) = mean((ssh_true_n - ssh_model_n).^2, 'all', 'omitnan');
 end
-% MSE per day
-mse_t(n) = mean((ssh_true_n - ssh_model_n).^2,'all','omitnan');
-end
+rmse_daily=sqrt(mse_daily);
 % MSE per window size
-mse = mean(mse_t,'omitnan');
+rmse = sqrt(mean(mse_daily,'omitnan'));
 %% 
 
 if options.showplot
@@ -134,17 +140,20 @@ if options.showplot
     jpcolor(x_rel(in_window_x),y_rel(in_window_y), eddy_field.ssh(in_window_x,in_window_y,end)' - ssh_model_n); shading flat;
     hold on;axis tight
     colorbar;
-    title('Difference (True - Model)');
+    title('True - Model');
     axis equal;
 
     figure;
-    plot([1:totalDays]-1,mse_t(:),'linewidth',2)
+    plot([1:totalDays]-1,rmse_daily(:),'linewidth',2)
     xlabel('Time (day)')
-    ylabel('MSE (m^2)')
+    ylabel('RMSE (m)')
     set(gca,'fontname','times','fontsize',16)
 
-end
+plotFitPosition(eddyPath_fun_t,paramsCell,trueParamsCell)
+xlim([min(x/1e3),max(x/1e3)]);ylim([min(y/1e3),max(y/1e3)])
+plotFitWindowed(paramsCell,trueParamsCell, eddyPath_fun_t)
 
-plotFitPosition(paramsCell,initParamsCell)
-xlim([min(x),max(x)]);ylim([min(y),max(y)])
-plotFitWindowed(paramsCell,true_params, eddyPath_fun_t)
+% To analyze a specific window in detail (e.g., window 3):
+plotSingleWindowFit(fullfield, eddyPath_fun_t, paramsCell, trueParamsCell, 60);
+
+end

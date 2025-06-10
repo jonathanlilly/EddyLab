@@ -80,7 +80,5 @@ function plotFitWindowed(paramsCell, trueParamsCell, eddyPath_fun_t)
         pos = get(gca, 'Position');
         set(gca, 'Position', [pos(1), pos(2)+0.01*(6-i), pos(3), pos(4)]);
     end
-    
-    % Add overall title
-    sgtitle(sprintf('Parameter Evolution Across %d Windows', totalTimeWindows), 'FontName', 'times', 'FontSize', 14);
+
 end

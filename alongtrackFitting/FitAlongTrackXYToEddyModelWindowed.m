@@ -40,30 +40,82 @@ for i=1:totalTimeWindows
     % Extract time window
     [alongtrack_window, window_indices] = extractAlongtrackWindow(alongtrack, window_start_day(i), window_end_day(i));
 
-%calculate velocity
-xe=eddyParams.xe((window_start_day(i):window_end_day(i))-t0);
-ye=eddyParams.ye((window_start_day(i):window_end_day(i))-t0);
-cx=vdiff(xe,2);
-cy=vdiff(ye,2);
-
-% Define t0 for this specific window
-t0_window = min(alongtrack_window.t);
-elapsed_time_window = alongtrack_window.t-t0_window;
-
-% Generate initial parameters from tracking data
-trueParams.A=mean(eddyParams.A((window_start_day(i):window_end_day(i))-t0+1));
-trueParams.L=mean(eddyParams.L((window_start_day(i):window_end_day(i))-t0+1));
-trueParams.cx=mean(cx);
-trueParams.cy=mean(cy);
-trueParams.x0=xe(1);
-trueParams.y0=ye(1);
-trueParamsCell{i,1} = trueParams;
-
-initParams=trueParams;
-% initParams_window.A=mean(trueParams.A);
-% initParams_window.L=mean(trueParams.L);
-% initParams_window.cx=mean(trueParams.cx);
-% initParams_window.cy=mean(trueParams.cy);
+    %calculate velocity
+    xe=eddyParams.xe((window_start_day(i):window_end_day(i))-t0);
+    ye=eddyParams.ye((window_start_day(i):window_end_day(i))-t0);
+    cx=vdiff(xe,2);
+    cy=vdiff(ye,2);
+    
+    % Define t0 for this specific window
+    t0_window = min(alongtrack_window.t);
+    elapsed_time_window = alongtrack_window.t-t0_window;
+    
+    % Generate initial parameters from tracking data
+    trueParams.A=mean(eddyParams.A((window_start_day(i):window_end_day(i))-t0+1));
+    trueParams.L=mean(eddyParams.L((window_start_day(i):window_end_day(i))-t0+1));
+    trueParams.cx=mean(cx);
+    trueParams.cy=mean(cy);
+    trueParams.x0=xe(1);
+    trueParams.y0=ye(1);
+    trueParamsCell{i,1} = trueParams;
+    
+    % initial guess
+    if i == 1
+        initParams = trueParams;  % First window: use tracking
+    else
+        % Later windows: project previous fit
+        time_step = window_start_day(i) - window_start_day(i-1);
+        initParams.x0 = paramsCell{i-1}.x0 + paramsCell{i-1}.cx * time_step;
+        initParams.y0 = paramsCell{i-1}.y0 + paramsCell{i-1}.cy * time_step;
+        initParams.A = paramsCell{i-1}.A;
+        initParams.L = paramsCell{i-1}.L;
+        initParams.cx = paramsCell{i-1}.cx;
+        initParams.cy = paramsCell{i-1}.cy;
+    end
+    
+%     radius_tolerance = 0.35;  % ±15% only
+%     pos_tolerance = 0.4;      % ±0.4 radii for position
+%     vel_tolerance = 0.5;     % ±25% for velocity
+% 
+%     LB = [
+%         trueParams.A * 0.7,                                    % A: -30%
+%         trueParams.L * (1 - radius_tolerance),                 % L: -15% (tight!)
+%         trueParams.x0 - pos_tolerance * trueParams.L,          % x0: ±0.4 radii
+%         trueParams.y0 - pos_tolerance * trueParams.L,          % y0: ±0.4 radii
+%         trueParams.cx - max(abs(trueParams.cx) * vel_tolerance, 0.3),  % cx: min ±0.3 m/s
+%         trueParams.cy - max(abs(trueParams.cy) * vel_tolerance, 0.3)   % cy: min ±0.3 m/s
+%     ];
+% 
+%     UB = [
+%         trueParams.A * 1.3,                                    % A: +30%
+%         trueParams.L * (1 + radius_tolerance),                 % L: +15% (tight!)
+%         trueParams.x0 + pos_tolerance * trueParams.L,          % x0: ±0.4 radii
+%         trueParams.y0 + pos_tolerance * trueParams.L,          % y0: ±0.4 radii
+%         trueParams.cx + max(abs(trueParams.cx) * vel_tolerance, 0.3),  % cx: min ±0.3 m/s
+%         trueParams.cy + max(abs(trueParams.cy) * vel_tolerance, 0.3)   % cy: min ±0.3 m/s
+%     ];
+% 
+%     % Call your existing fitting function with bounds
+%     bound.lower=LB;
+%     bound.upper=UB;
+%     params = FitAlongTrackXYToEddyModel(alongtrack_window, eddyFit_fun, initParams, it_options, ...
+%         bound=bound);
+% 
+%     % % velocity smoothing
+%     % if i > 1
+%     %     % If velocities changed too much, smooth them
+%     %     if abs(params.cx - paramsCell{i-1}.cx) > 0.5  % >0.5 m/s change
+%     %         params.cx = 0.7 * params.cx + 0.3 * paramsCell{i-1}.cx;
+%     %     end
+%     %     if abs(params.cy - paramsCell{i-1}.cy) > 0.5
+%     %         params.cy = 0.7 * params.cy + 0.3 * paramsCell{i-1}.cy;
+%     %     end
+%     % end
+% 
+%     params.t0 = window_start_day(i);
+%     params.elapsed_time = elapsed_time_window;
+%     paramsCell{i,1} = params;
+% end
 
 % Generate bounds
 tracking_bound_options = struct(...
@@ -77,18 +129,18 @@ tracking_bound_options = struct(...
 % STEP 3: Optionally combine with previous fit bounds using intersection
 if i > 1 && options.usePreviousFitConstraints
     fprintf('\nApplying additional constraints from previous fit...\n');
-    
+
     prevParams = paramsCell{i-1};
     time_diff = window_start_day(i) - window_start_day(i-1);
-    
+
     prevfit_bound_options = struct(...
         'amplitudeTolerance', 0.15, ...
         'radiusTolerance', 0.2 , ...
         'velocityTolerance', 0.3, ...
         'positionTolerance', 0.5);
-    
+
     [LB_previous, UB_previous] = generatePreviousFitBounds(prevParams, time_diff, prevfit_bound_options);
-    
+
     % Combine bounds using intersection (&&)
     [LB_final, UB_final] = intersectBounds(LB_tracking, UB_tracking, LB_previous, UB_previous);
 else
@@ -162,7 +214,7 @@ if any(invalid_bounds)
     fprintf('Warning: Incompatible bounds detected for parameters: %s\n', ...
         strjoin(param_names(invalid_bounds), ', '));
     fprintf('Using tracking bounds only for incompatible parameters.\n');
-    
+
     % Revert to tracking bounds for incompatible parameters
     LB_combined(invalid_bounds) = LB_tracking(invalid_bounds);
     UB_combined(invalid_bounds) = UB_tracking(invalid_bounds);

@@ -27,7 +27,8 @@ p0(6)=initParams.cy;
 % penalty_function = @(p) sum((ssh - eddyFit_fun(x,y,t,p(1),p(2),p(3),p(4),p(5),p(6))).^2);
 
 % Change to s1caled parameters (A, L, x0,y0,cx,cy)
-scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your parameter scales
+% scale_factors = [1e-2, 1e3, 1e3, 1e3, 1e3, 1e3]; % Adjust based on your parameter scales
+scale_factors = [1e-2, 1e3, 1e4, 1e4, 1e2, 1e2]; % velocities are 100 m/day scale now not km/day
 p0_scaled = p0 ./ scale_factors;
 
 % Scaled penalty function
