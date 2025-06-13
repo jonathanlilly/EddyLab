@@ -6,7 +6,7 @@ arguments
     options.showplot (1,1) logical = true %control whether to display plots
     options.data_type string = "auto" % "grid", "alongtrack", or "auto"
     options.max_r (1,1) {mustBeNumeric} = 400*1e3 %in meter
-    options.interp (1,1) logical = false %interpolate scattered data onto regular grid
+    options.interp = false; %interpolate alongtrack onto the center points of the binned grid.
 end
 
 use alongtrack
@@ -55,8 +55,9 @@ if data_type == "grid"
 else
     % Alongtrack array data processing
     if options.interp
-    [ssh_interp, xE, yE] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
-    ssh_data = ssh_interp;
+        % Snap alongtrack points to nearest bin centers
+        [ssh_interp, xE, yE] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r);
+        ssh_data = ssh_interp;
     else
     % Calculate eddy-relative coordinates directly
     xE = x - xo;

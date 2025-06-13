@@ -17,7 +17,7 @@ arguments
 end
 %alongtrackLatLon: lat,lon,time
 % Deduce time window length from alongtrackLatLon
-t0=min(alongtrack.t);
+t0=floor(min(alongtrack.t));
 
 % totalDays=max(alongtrack.t)-t0+1;
 % min_days_per_window = 45;  % Need at least 4.5 cycles for the eddy core coverage
@@ -36,15 +36,19 @@ window_center = (window_start_day + window_end_day) / 2;
 % pre-allocate cells for number of windows
 % paramsCell = cell(totalTimeWindows, 1);
 
+%velocity
+eddyParams.cx=vdiff(eddyParams.xe((window_start_day(1):window_end_day(totalTimeWindows))-t0),2);
+eddyParams.cy=vdiff(eddyParams.ye((window_start_day(1):window_end_day(totalTimeWindows))-t0),2);
+
 for i=1:totalTimeWindows
     % Extract time window
     [alongtrack_window, window_indices] = extractAlongtrackWindow(alongtrack, window_start_day(i), window_end_day(i));
 
     %calculate velocity
-    xe=eddyParams.xe((window_start_day(i):window_end_day(i))-t0);
-    ye=eddyParams.ye((window_start_day(i):window_end_day(i))-t0);
-    cx=vdiff(xe,2);
-    cy=vdiff(ye,2);
+    xe=eddyParams.xe((window_start_day(i):window_end_day(i))-t0);%function - start at 0
+    ye=eddyParams.ye((window_start_day(i):window_end_day(i))-t0);%function - start at 0
+    cx=eddyParams.cx((window_start_day(i):window_end_day(i))-t0+1);%index - start at 1
+    cy=eddyParams.cy((window_start_day(i):window_end_day(i))-t0+1);%index - start at 1
     
     % Define t0 for this specific window
     t0_window = min(alongtrack_window.t);

@@ -1,17 +1,36 @@
 function [ssh_interp, x_out, y_out] = interpEddyCentric(x, y, t, xo, yo, ssh, bin_size, max_r)
-% INTERPEDDYCENTRIC Interpolate gridded data onto eddy-centric coordinate system
+arguments
+    x (:,1) {mustBeNumeric}           % Original x coordinates (vector)
+    y (:,1) {mustBeNumeric}           % Original y coordinates (vector)  
+    t (:,1) {mustBeNumeric}           % Time vector
+    xo (:,1) {mustBeNumeric}          % Eddy center x positions at each time
+    yo (:,1) {mustBeNumeric}          % Eddy center y positions at each time
+    ssh (:,:,:) {mustBeNumeric}       % SSH data (can be 3D grid or vector for alongtrack)
+    bin_size (1,1) {mustBeNumeric}    % Grid spacing for interpolation (meters)
+    max_r (1,1) {mustBeNumeric}       % Maximum radius for interpolation (meters)
+end
+
+% INTERPEDDYCENTRIC Interpolate gridded or alongtrack data onto eddy-centric coordinate system
 %
 % Inputs:
 %   x, y, t    - Original coordinate vectors
 %   xo, yo     - Eddy center positions at each time (arrays)
-%   ssh        - 3D SSH data array (x, y, t)
+%   ssh        - 3D SSH data array (x, y, t) for grid data, or vector for alongtrack
 %   bin_size   - Grid spacing for interpolation (in meters)
+%   max_r      - Maximum radius for interpolation domain (in meters)
+%
+% Options:
+%   return_grid      - If true, returns full regular grid; if false, returns scattered points
+%   interp_method    - Interpolation method: 'natural', 'linear', 'nearest'
+%   extrap_method    - Extrapolation method: 'nearest', 'linear', 'none'
+%   fill_value       - Value to use for areas with no data (NaN, 0, etc.)
+%   min_points_per_time - Minimum number of points required for interpolation at each time
 %
 % Outputs:
-%   ssh_interp   - Interpolated SSH data on eddy-centric grid
-%   XGrid, YGrid - Meshgrid matrices of interpolated coordinates
-% Determine data type if set to auto
-% Automatically detect data type based on ssh structure
+%   ssh_interp   - Interpolated SSH data (grid or scattered depending on return_grid)
+%   x_out, y_out - Output coordinate arrays (meshgrid matrices or vectors)
+
+% Determine ssh data type automatically
 if isvector(ssh) && length(ssh) == length(x) && length(ssh) == length(y) && length(ssh) == length(t)
     % If ssh is a vector with same length as x, y, t, it's alongtrack data
     data_type = "alongtrack";

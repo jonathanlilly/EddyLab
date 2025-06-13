@@ -8,7 +8,7 @@ alongtrack.y=alongtrack.y(sort_idx);
 alongtrack.ssh=alongtrack.ssh(sort_idx);
 
 % Find indices that correspond to times within this window
-window_indices = find(alongtrack.t >= window_start_day & alongtrack.t <= window_end_day);
+window_indices = find(alongtrack.t >= floor(window_start_day) & alongtrack.t <= floor(window_end_day));
 
 alongtrack_window.x = alongtrack.x(window_indices);
 alongtrack_window.y = alongtrack.y(window_indices);

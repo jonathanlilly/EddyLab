@@ -13,12 +13,12 @@ else
     totalTimeWindows = ceil((totalDays - window_size) / time_step);
 end
 for i = 1:totalTimeWindows    
-window_start_day(i) = t0 + (i-1)*time_step;
-window_end_day(i) = window_start_day(i) + window_size - 1;
+window_start_day(i) = floor(t0 + (i-1)*time_step);
+window_end_day(i) = floor(window_start_day(i) + window_size - 1);
 
 if window_end_day(i) > max(time)
-    window_end_day(i) = max(time);
-    window_start_day(i) = max(t0, window_end_day(i) - window_size + 1);
+    window_end_day(i) = floor(max(time));
+    window_start_day(i) = floor(max(t0, window_end_day(i) - window_size + 1));
 end
 end
 
