@@ -180,7 +180,7 @@ for i = 1:row
     xlim([0, 250]);ylim([1,length(tmid_rt)]-1)
     text(215, 31, labels{3*(i-1)+1}, 'fontsize', 14, 'fontname', 'times','color','w');
     
-    % Column 2: Plot stdz (temporal std)
+    % Column 2: Plot stdz (azi std)
     axes('Units','centimeters', [col_starts(2), row_starts(i), subplot_width, subplot_height]);
     % subplot(3, 3, 3*(i-1)+2);
     hold on;

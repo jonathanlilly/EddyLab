@@ -12,10 +12,19 @@ data{1} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 [mzxy, rmid, ~, stdz_rt] = radialProfile(alongtrack, eddyPath_fun_t,showplot=0);
 data{2} = {mz, xmid, ymid, stdz, mzxy, rmid, stdz_rt};
 
+%Full
+[mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt] = radialProfileTime(fullfield,eddyPath_fun_t,showplot=0);
+data2{1} = {mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt};
+
+%OSSE
+[mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt] = radialProfileTime(alongtrack,eddyPath_fun_t,showplot=0);
+data2{2} = {mz_rt, rmid_rt, tmid_rt, numz_rt, stdz_rt};
+
 row=2;
 %%
-figname='QG_eddy_composite';
+figname='QG_eddy_composite_radtime';
 plot_data = data;
+plot_data2 = data2;
 %% subplots
 main_fig = figure('color','w');
 set(gcf,'Units','centimeters');  %Ensure all dimensions are in cm
@@ -29,7 +38,7 @@ clf(main_fig)
 % Create axes for the colorbars at the top
 cbar1_pos = [1.5, 10.7, 4.3, 0.4]; % Position for the first colorbar
 cbar2_pos = [6.8, 10.7, 4.3, 0.4];  % Position for the second colorbar
-legend_pos = [12.8, 10.7, 4.3, 0.4]; % Position for the legend at the top
+cbar3_pos = [12, 10.7, 4.3, 0.4]; % Position for the legend at the top
 
 % First colorbar for SSH
 cbar1_ax = axes('Units','centimeters','Position', cbar1_pos);
@@ -60,29 +69,20 @@ caxis(cbar2_ax, clim_cbar2);
 axis(cbar2_ax, 'off');
 title(cbar2_ax, 'Temporal variance (cm)', 'fontsize', 12, 'fontname', 'times');
 
-% Third legend for variance
+% Third colorbar for variance
 % Create an invisible axes for the legend at the top
-legend_ax = axes('Units','centimeters','Position', legend_pos);
-
-% Create dummy lines with the same formatting as will be used in the plots
-% h_dummy = cell(7,1);
-h = plot(NaN, nan(1,6)*1e2);
-linestyle 2k 2W 2V-. 2X:%2T-- 2U-- 
-% Create the legend at the top
-legend_top = legend(legend_ax, ...
-    '$\overline{\eta}^\theta$', '$\Sigma_{\eta}$', ...
-    '$\overline{\varsigma_\eta}^t$', '$\sigma_{\overline{\eta}^\theta}$',...
-    'interpreter', 'latex', 'fontsize', 10, 'orientation', 'vertical', 'NumColumns', 3);
-    % '$\overline{\sigma_\eta}^\theta$', ...
-    % '$\varsigma_{\overline{\eta}^t}$', ...
-% lg = legend(h_dummy, '$\overline{\eta_{xy}}^\theta$', '$\overline{\sigma_\eta}^\theta$', '$\varsigma_{\overline{\eta}^t}$', '$\Sigma_{\eta_{xy}}$', '$\overline{\varsigma_\eta}^t$', '$\sigma_{\overline{\eta}^\theta}$', '$\Sigma_{\eta_{rt}}$');
-%         set(lg, 'interpreter', 'latex', 'fontsize', 12, 'orientation', 'vertical', 'NumColumns', 2);
-% set(legend_top,'Position', legend_pos)
-        % 
-        % Position the legend box
- legend_top.Position=[0.67,0.84,0.32,0.055];
-title(legend_ax, 'SSH variance (cm)', 'fontsize', 12, 'fontname', 'times');
-axis(legend_ax, 'off');
+cbar3_ax = axes('Units','centimeters','Position', cbar3_pos);
+colormap(cbar3_ax, brewermap([], '-Spectral'));
+cbar3 = colorbar('peer', cbar3_ax, 'Location', 'North');
+cbar3.Position(1)=0.68;
+cbar3.Position(4)=0.02;
+cbar3.Position(2)=cbar3.Position(2)-0.06;
+cbar3.FontName = 'times';
+cbar3.FontSize = 12;
+clim_cbar3 = [0,2];
+caxis(cbar3_ax, clim_cbar3);
+axis(cbar3_ax, 'off');
+title(cbar3_ax, 'Azimuthal variance (cm)', 'fontsize', 12, 'fontname', 'times');
 
 % Create tighter subplots
 % Define new positions for the subplots
@@ -92,7 +92,7 @@ hgap = 0.01;
 vgap = 0.3;
 col1_start = 0.7;
 col2_start = 5.8;
-col3_start = 12.5;
+col3_start = 12;
 
 row_starts = 1.5+(subplot_height+vgap).*[1,0];
 
@@ -105,6 +105,12 @@ for i = 1:row
     mzxy = plot_data{i}{5};
     rmid = plot_data{i}{6};
     stdz_rt = plot_data{i}{7};
+
+    mz_rt = plot_data2{i}{1};
+    rmid_rt = plot_data2{i}{2};
+    tmid_rt = plot_data2{i}{3};
+    numz_rt = plot_data2{i}{4};
+    stdz_rt2 = plot_data2{i}{5};
 
     % Column 1: Plot mz (time-averaged SSH)
     axes('Units','centimeters','Position', [col1_start, row_starts(i), subplot_width, subplot_height]);
@@ -150,34 +156,28 @@ for i = 1:row
     ylim([-250, 250]);
     text(-230, 210, labels{3*(i-1)+2}, 'fontsize', 14, 'fontname', 'times','color','k');
 
-    % Column 3: Plot radial profiles
-    axes('Units','centimeters','Position', [col3_start, row_starts(i), subplot_width-1.5, subplot_height-0.2]);
+    % Column 3: Plot stdz in time (azi std)
+    axes('Units','centimeters','Position', [col3_start, row_starts(i), subplot_width-1.7, subplot_height]);
     % subplot(3, 3, 3*(i-1)+3);
     hold on;
     
     % Plot the radial profiles (assuming avgAziStdTemp, etc. are available)
-    % Note: You might need to adjust this part depending on how these variables are defined in your script
-    use stdz_rt
-    % Apply line styles
-    h = plot(rmid/1e3, [mzxy,  stdTotalxy, avgTempStdAzi, stdTempAvgAzi]*1e2);% avgAziStdTemp, stdAziAvgTemp,
-    linestyle 2k 2W 2V-- 2X--% 2T-- 2U-- 
-    hlines(0, 'k:')
-
+    jpcolor(rmid_rt/1e3, [1:length(tmid_rt)], abs(stdz_rt2)*1e2) %mz_rt'./vmean(mz_rt,2)'
+    shading flat;
+    % axis equal;
     if(i~=row)
         set(gca,'XTickLabel',[])
     else
-        xlabel('Radial distance (km)', 'FontName', 'times');
+        xlabel('Radial distance (km)', 'FontName', 'times')
     end
-    % ylabel('SSH Variance (cm)', 'FontName', 'times');
-    set(gca, 'ticklength', [0.03, 0.02], 'fontname', 'times', 'fontsize', 12);
-    
-    % if i == 1  % Only add legend to the fi`rst radial profile plot
-    %     lg = legend(h, '$\overline{\eta_{xy}}^\theta$', '$\overline{\sigma_\eta}^\theta$', '$\varsigma_{\overline{\eta}^t}$', '$\Sigma_{\eta_{xy}}$', '$\overline{\varsigma_\eta}^t$', '$\sigma_{\overline{\eta}^\theta}$', '$\Sigma_{\eta_{rt}}$');
-    %     set(lg, 'interpreter', 'latex', 'fontsize', 12, 'orientation', 'vertical', 'NumColumns', 2);
-    % end
-    
-    xlim([0, 250]);ylim([-2,13])
-    text(-60, max(get(gca, 'YLim')), labels{3*(i-1)+3}, 'fontsize', 14, 'fontname', 'times');
+    ylabel('Time (Cycle)', 'FontName', 'times')
+    set(gca,'YTickLabel',[])
+    set(gca, 'fontname', 'times', 'fontsize', 12);
+    colormap(brewermap([], '-Spectral'));
+    % colorbar('EastOutside');
+    clim(clim_cbar3)
+    xlim([0, 250]);ylim([1,length(tmid_rt)]-1)
+    text(10, 32, labels{3*(i-1)+3}, 'fontsize', 14, 'fontname', 'times','color','k');
 end
 
 %%
