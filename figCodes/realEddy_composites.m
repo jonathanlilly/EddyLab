@@ -1,6 +1,6 @@
 %% Load eddy center tracking
 eddy_id='+527413';
-readdir = 'G:\My Drive\AlongTrack\';
+readdir = 'E:\My Drive\AlongTrack\';
 filename = strcat([readdir,'MyCode\eddy_',eddy_id,'.nc']);
 timeo = ncread(filename,'eddy/time')+datenum(1950,01,01); %Initial time is also a free parameter
 eddy_time = timeo-min(timeo);

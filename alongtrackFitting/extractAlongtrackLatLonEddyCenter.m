@@ -4,6 +4,7 @@ arguments
     eddyPath struct
     timeo (:,:) {mustBeNumeric, mustBePositive}
     options.radius (1,1) {mustBeNumeric} = 300
+    options.getSSH = true
 end
 use options
 
@@ -24,12 +25,14 @@ for n=1:length(timeo)
     %create a region enclosing minima and maxima lon and lat
     region = [min(long(:)), max(long(:)), min(latg(:)), max(latg(:))];
 
-    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),getSSH=true);
+    local_at = alongtrackFromLatLonDomain(JasonAlongTrack,region,timeo(n),lato=eddyPath.lat(n),lono=eddyPath.lon(n),getSSH=getSSH);
     
     % Concatenate results
 
     alongtrackLatLon.t = [alongtrackLatLon.t; local_at.t];
     alongtrackLatLon.lon = [alongtrackLatLon.lon; local_at.lon];
     alongtrackLatLon.lat = [alongtrackLatLon.lat; local_at.lat];
+    if getSSH
     alongtrackLatLon.ssh = [alongtrackLatLon.ssh; local_at.ssh];
+    end
 end

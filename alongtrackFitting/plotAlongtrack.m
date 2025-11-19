@@ -108,9 +108,20 @@ else
     error('alongtrack must contain either lat/lon or x/y coordinate fields');
 end
 
+% Create color map for missions
+uniqueMissions = unique(alongtrack.mission);
+n_missions = length(uniqueMissions);
+colors = lines(n_missions);  % Use distinct colors for each mission
+
 % First figure: Track visualization
 figure; hold on
-h(2) = scatter(plot_x, plot_y, 2, 'MarkerFaceColor', 'flat');
+for i = 1:n_missions
+    mission_mask = strcmp(alongtrack.mission, uniqueMissions(i));
+    h(1+i)=scatter(alongtrack.lon(mission_mask), alongtrack.lat(mission_mask), ...
+        2, colors(i,:), 'filled','DisplayName', char(uniqueMissions(i)));
+    h(1+i).MarkerFaceAlpha=1;
+end
+% h(2) = scatter(plot_x, plot_y, 2, 'MarkerFaceColor', 'flat');
 xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16,'Interpreter','latex')
 ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14,'Interpreter','latex')
 h(1) = plot(eddy_x, eddy_y, 'LineWidth', 3, 'Color', 0*[1 1 1]);
@@ -136,8 +147,10 @@ set(gca, 'fontname', 'times', 'fontsize', 16)
 if true % set to false if no legend is desired
     clear str
     str{1} = ['Eddy path'];
-    str{2} = ['Along-track'];
-    legend(h, str, 'location', 'northeast', 'interpreter', 'tex')
+    for i=1:length(uniqueMissions)
+    str{i+1} = [uniqueMissions(i)];
+    end
+    legend(h, ['Eddy path';uniqueMissions], 'location', 'northeast', 'interpreter', 'tex')
 end
 
 % Second figure: Alongtrack plot with SSH

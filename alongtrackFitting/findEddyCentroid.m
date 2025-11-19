@@ -3,7 +3,7 @@ arguments
     x (:,:) {mustBeNumeric}
     y (:,:) {mustBeNumeric}
     ssh3D (:,:,:) {mustBeNumeric}
-    options.ThresholdRatio (1,1) {mustBeNumeric} = 0.9
+    options.ThresholdRatio (1,1) {mustBeNumeric} = 0.9 %default for SSH
     options.GetBoundary (1,1) logical = 'false'
     options.BoundaryType (1,1) string = 'SSH-e-fold'
     options.lato (1,1) {mustBeNumeric} = 24
