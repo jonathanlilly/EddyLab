@@ -109,6 +109,9 @@ else
 end
 
 % Create color map for missions
+if ~isfield(alongtrack,'mission')
+    alongtrack.mission='j3n';
+end
 uniqueMissions = unique(alongtrack.mission);
 n_missions = length(uniqueMissions);
 colors = lines(n_missions);  % Use distinct colors for each mission
