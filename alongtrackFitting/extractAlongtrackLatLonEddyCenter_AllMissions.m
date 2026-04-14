@@ -87,8 +87,8 @@ for day_idx = 1:length(time_days)
     
     
     % Convert day to seconds for time window (24-hour window)
-    time_start = (current_day - t_min) * 86400; % seconds since start
-    time_end = time_start + 86400; % 24 hours later
+    time_start_seconds = (current_day - t_min) * 86400; % seconds since start for simulator
+    time_end_seconds = time_start_seconds + 86400; % 24 hours later
     
     % Loop through all missions
     for mission_idx = 1:length(allMissions)
@@ -96,10 +96,9 @@ for day_idx = 1:length(time_days)
         
         try
             % Get ground track for this mission for the day
-            % Create time vector covering several orbits to ensure coverage
             T_orbit = alongtrackSimulator.orbitalPeriodForMissionWithName(mission_name);
-            N_orbits = ceil(24*60*60 / T_orbit) + 1; % Number of orbits in 24 hours + buffer
-            time_vec = time_start:1:time_end;
+            N_orbits = ceil(24*60*60 / T_orbit) + 1;
+            time_vec = time_start_seconds:1:time_end_seconds;  % For simulator (in seconds)
             
             % Check if mission was active during this time
             % Handle missions with multiple phases (arrays of start/end dates)
@@ -163,7 +162,9 @@ for day_idx = 1:length(time_days)
                 if any(within_radius)
                     % Concatenate results
                     n_points = sum(within_radius);
-                    alongtrackLatLon.t = [alongtrackLatLon.t; time_in(within_radius)];
+                    % Convert time from seconds since t_min to datenum
+                    time_datenum = t_min + time_in(within_radius)/86400;
+                    alongtrackLatLon.t = [alongtrackLatLon.t; time_datenum];
                     alongtrackLatLon.lon = [alongtrackLatLon.lon; lon_in(within_radius)];
                     alongtrackLatLon.lat = [alongtrackLatLon.lat; lat_in(within_radius)];
                     

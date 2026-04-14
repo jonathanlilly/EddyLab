@@ -131,16 +131,17 @@ if has_ssh
     figure('Position', [100, 100, 650, 1000]); 
 else
     n_subplots = 2;
-    figure('Position', [100, 100, 650, 550]); 
+    figure('Position', [100, 100, 700, 550]); 
 end
 
 % First subplot: Track visualization
 ax1 = subplot(n_subplots, 1, 1);
 hold on
-% add a title
-if isfield(options, 'eddy_id')
-title(['Eddy' options.eddy_id], 'interpreter', 'tex')
-end
+
+% % add a title
+% if isfield(options, 'eddy_id')
+% title(['Eddy' options.eddy_id], 'interpreter', 'tex')
+% end
 
 for i = 1:n_missions
     mission_mask = strcmp(alongtrack.mission, uniqueMissions(i));
@@ -148,7 +149,7 @@ for i = 1:n_missions
         2, colors(i,:), 'filled', 'DisplayName', char(uniqueMissions(i)));
     h(1+i).MarkerFaceAlpha = 1;
 end
-xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16, 'Interpreter', 'latex')
+% xlabel(xlabel_str, 'FontName', 'times', 'fontsize', 16, 'Interpreter', 'latex')
 ylabel(ylabel_str, 'FontName', 'times', 'fontsize', 14, 'Interpreter', 'latex')
 h(1) = plot(eddy_x, eddy_y, 'LineWidth', 3, 'Color', 0*[1 1 1]);
 plot(eddy_x(1), eddy_y(1), 'ko', 'markersize', 8, 'markerfacecolor', 'k')
@@ -171,7 +172,7 @@ set(gca, 'fontname', 'times', 'fontsize', 16)
 legend(h, ['Eddy path'; uniqueMissions], 'location', 'northoutside', 'interpreter', 'tex','NumColumns',4)
 
 % Store position of first subplot for alignment
-pos1=[0.11,0.48,0.72,0.29];
+pos1=[0.11,0.52,0.72,0.29];
 set(ax1, 'Position', pos1);
 %get(ax1, 'Position');
 
@@ -261,7 +262,7 @@ ylabel(ylabel_str, 'FontName', 'times', 'Interpreter', 'latex')
 % pos2 = get(ax2, 'Position');
 % pos2(1) = pos1(1);  % Match left edge
 % pos2(3) = pos1(3);  % Match width
-pos2=[0.11,0.11,0.72,0.29];
+pos2=[0.11,0.13,0.72,0.29];
 set(ax2, 'Position', pos2);
 
 % Third subplot: Along-track SSH (only if SSH data exists)
