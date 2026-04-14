@@ -8,7 +8,7 @@ MATLAB tools for extracting, modeling, and analyzing mesoscale ocean eddies from
 
 ## Requirements
 
-- MATLAB (tested with R2023b+)
+- MATLAB
 - Optimization Toolbox (for `fminsearch`)
 - [jLab](https://github.com/jonathanlilly/jLab) — a MATLAB toolbox for oceanographic data analysis (many functions in this repository depend on it)
 
