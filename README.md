@@ -1,4 +1,4 @@
-# Along-Track Altimetry Eddy Fitting
+# Eddy-Centric Along-Track Altimetry Analysis
 
 MATLAB tools for extracting, modeling, and analyzing mesoscale ocean eddies from satellite along-track altimetry data. This framework fits parametric eddy models (Gaussian and elliptical) to along-track sea surface height (SSH) observations, enabling high-resolution characterization of eddy structure and evolution.
 
