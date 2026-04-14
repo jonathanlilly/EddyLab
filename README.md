@@ -6,6 +6,19 @@ MATLAB tools for extracting, modeling, and analyzing mesoscale ocean eddies from
 
 > C.-Y. Ohh, P. Gaube, J. Early, B. Curtis, and J. Lilly, "Model-guided approach to access high-resolution mesoscale eddy dynamics from along-track altimetry," *Geophysical Research Letters* (in preparation).
 
+## Requirements
+
+- MATLAB (tested with R2023b+)
+- Optimization Toolbox (for `fminsearch`)
+- [jLab](https://github.com/jonathanlilly/jLab) — a MATLAB toolbox for oceanographic data analysis (many functions in this repository depend on it)
+
+## Related Tools
+
+This project builds on several companion packages:
+
+- [WaveVortexModel](https://wavevortexmodel.org/) — used to generate quasigeostrophic single-eddy simulations ([GitHub](https://github.com/JeffreyEarly/OceanKit))
+- [AlongTrackSimulator](https://satmapkit.github.io/AlongTrackSimulator/) — simulates satellite along-track sampling patterns ([GitHub](https://github.com/satmapkit/AlongTrackSimulator))
+
 ## Getting Started
 
 The repository includes four demo live scripts that illustrate the main workflows:
