@@ -16,7 +16,7 @@ MATLAB tools for extracting, modeling, and analyzing mesoscale ocean eddies from
 
 This project builds on several companion packages:
 
-- [WaveVortexModel](https://wavevortexmodel.org/) — used to generate quasigeostrophic single-eddy simulations ([GitHub](https://github.com/JeffreyEarly/OceanKit))
+- [WaveVortexModel](https://wavevortexmodel.org/) — used to generate quasigeostrophic isolated-eddy simulations ([GitHub](https://github.com/JeffreyEarly/OceanKit))
 - [AlongTrackSimulator](https://satmapkit.github.io/AlongTrackSimulator/) — simulates satellite along-track sampling patterns ([GitHub](https://github.com/satmapkit/AlongTrackSimulator))
 
 ## Getting Started
