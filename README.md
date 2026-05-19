@@ -4,7 +4,7 @@ MATLAB tools for extracting, modeling, and analyzing mesoscale ocean eddies from
 
 ## Associated Publication
 
-> C.-Y. Ohh, P. Gaube, J. Early, B. Curtis, and J. Lilly, "Model-guided approach to access high-resolution mesoscale eddy dynamics from along-track altimetry," *Geophysical Research Letters* (in preparation).
+> C.-Y. Ohh, P. Gaube, J. Early, B. Curtis, and J. Lilly, "Examining parametric estimates of mesoscale eddies from along-track radar altimetry observations using observational systems simulation," *Geophysical Research Letters* (in preparation).
 
 ## Requirements
 
