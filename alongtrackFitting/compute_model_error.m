@@ -180,11 +180,14 @@ if options.showplot
     ylabel('RMSE (m)')
     set(gca,'fontname','times','fontsize',16)
 
+    switch model
+        case 'Gaussian'
+
 plotFitPosition(eddyPath_fun_t,paramsCell,trueParamsCell)
 xlim([min(x/1e3),max(x/1e3)]);ylim([min(y/1e3),max(y/1e3)])
 plotFitWindowed(paramsCell,trueParamsCell, eddyPath_fun_t)
 
 % To analyze a specific window in detail (e.g., window 3):
 plotSingleWindowFit(alongtrack, eddyPath_fun_t, paramsCell, trueParamsCell, 60);
-
+    end
 end

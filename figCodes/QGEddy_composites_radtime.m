@@ -171,7 +171,6 @@ for i = 1:row
         xlabel('Radial distance (km)', 'FontName', 'times')
     end
     ylabel('Time (Cycle)', 'FontName', 'times')
-    set(gca,'YTickLabel',[])
     set(gca, 'fontname', 'times', 'fontsize', 12);
     colormap(brewermap([], '-Spectral'));
     % colorbar('EastOutside');

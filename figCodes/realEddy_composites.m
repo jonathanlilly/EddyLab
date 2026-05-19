@@ -111,7 +111,7 @@ end
     mapped_extracted.y = ymid;
     mapped_extracted.t = timeo;%permute(repmat(timeo,[1,length(xmid),length(xmid)]),[2,3,1]);
 %%
-time_window=100:300;%1:length(timeo)-1;
+% time_window=1:length(timeo)-1;
 window_idx = find(alongtrackLatLon.t-min(alongtrackLatLon.t) >= time_window(1) & alongtrackLatLon.t-min(alongtrackLatLon.t) <= time_window(end));
 alongtrack.t=alongtrackLatLon.t(window_idx);
 alongtrack.x=alongtrackXY.x(window_idx);
